@@ -8,6 +8,7 @@ import {
   Play, 
   Trash2, 
   Plus, 
+  Minus,
   Eye, 
   EyeOff, 
   MessageSquare, 
@@ -24,8 +25,9 @@ const App: React.FC = () => {
   const [settings, setSettings] = useState<GameSettings>({
     category: 'Comida',
     impostorCount: 1,
-    undercoverCount: 1
+    undercoverCount: 0
   });
+  const [isUndercoverEnabled, setIsUndercoverEnabled] = useState(false);
   const [distributionIndex, setDistributionIndex] = useState(0);
   const [isWordVisible, setIsWordVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -68,6 +70,7 @@ const App: React.FC = () => {
     const words = await generateWordPair(category);
 
     const shuffled = [...players].sort(() => Math.random() - 0.5);
+    
     const updatedPlayers = shuffled.map((p, idx) => {
       let role = PlayerRole.CITIZEN;
       let word = words.citizenWord;
@@ -75,7 +78,7 @@ const App: React.FC = () => {
       if (idx === 0) {
         role = PlayerRole.IMPOSTOR;
         word = 'Você é o IMPOSTOR! (Tente descobrir a palavra)';
-      } else if (idx === 1 && settings.undercoverCount > 0) {
+      } else if (idx > 0 && idx <= settings.undercoverCount) {
         role = PlayerRole.UNDERCOVER;
         word = words.undercoverWord;
       }
@@ -110,8 +113,8 @@ const App: React.FC = () => {
       setWinner('CIDADÃOS');
       setPhase(GamePhase.REVEAL);
     } else {
-      const activeImpostors = newPlayers.filter(p => !p.isEliminated && p.role === PlayerRole.IMPOSTOR).length;
-      const activeCivilians = newPlayers.filter(p => !p.isEliminated && p.role !== PlayerRole.IMPOSTOR).length;
+      const activeImpostors = newPlayers.filter(p => !p.isEliminated && (p.role === PlayerRole.IMPOSTOR || p.role === PlayerRole.UNDERCOVER)).length;
+      const activeCivilians = newPlayers.filter(p => !p.isEliminated && p.role === PlayerRole.CITIZEN).length;
       
       if (activeImpostors >= activeCivilians) {
         setWinner('IMPOSTOR');
@@ -126,6 +129,25 @@ const App: React.FC = () => {
     setPlayers(players.map(p => ({ ...p, isEliminated: false, word: '', role: PlayerRole.CITIZEN })));
     setPhase(GamePhase.LOBBY);
     setWinner(null);
+  };
+
+  const toggleUndercover = () => {
+    const newVal = !isUndercoverEnabled;
+    setIsUndercoverEnabled(newVal);
+    setSettings({
+      ...settings,
+      undercoverCount: newVal ? 1 : 0
+    });
+  };
+
+  const updateUndercoverCount = (val: number) => {
+    const newCount = Math.min(5, Math.max(1, settings.undercoverCount + val));
+    setSettings({ ...settings, undercoverCount: newCount });
+  };
+
+  const getLabel = () => {
+    if (!isUndercoverEnabled) return "Impostor";
+    return settings.undercoverCount > 1 ? "Impostores" : "Impostor";
   };
 
   return (
@@ -176,13 +198,48 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700">
-              <h2 className="text-lg font-semibold mb-4 text-cyan-400">Opções</h2>
-              <div className="flex items-center justify-between p-3 bg-slate-900 rounded-xl border border-slate-700">
-                <span>Com Infiltrado?</span>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => setSettings({...settings, undercoverCount: 0})} className={`w-10 h-10 rounded-lg ${settings.undercoverCount === 0 ? 'bg-cyan-600' : 'bg-slate-700'}`}>Não</button>
-                  <button onClick={() => setSettings({...settings, undercoverCount: 1})} className={`w-10 h-10 rounded-lg ${settings.undercoverCount === 1 ? 'bg-cyan-600' : 'bg-slate-700'}`}>Sim</button>
+            <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700 space-y-4">
+              <h2 className="text-lg font-semibold text-cyan-400">Opções</h2>
+              
+              <div className="flex items-center justify-between bg-slate-900/60 p-4 rounded-3xl border border-slate-700 min-h-[80px]">
+                {/* Texto com margem à direita para nunca encostar nos botões */}
+                <div className="flex-1 mr-4 overflow-hidden">
+                  <span className="text-lg font-bold transition-all duration-300 block truncate">
+                    {getLabel()}
+                  </span>
+                </div>
+                
+                <div className="flex items-center gap-4 shrink-0">
+                  {/* Toggle Switch */}
+                  <button 
+                    onClick={toggleUndercover}
+                    className={`relative w-14 h-7 rounded-full transition-all duration-300 border-2 ${isUndercoverEnabled ? 'bg-emerald-500/20 border-emerald-500' : 'bg-slate-700 border-slate-600'}`}
+                  >
+                    <div className={`absolute top-0.5 transition-all duration-300 w-5 h-5 rounded-full shadow-md ${isUndercoverEnabled ? 'left-7.5 bg-emerald-400' : 'left-0.5 bg-slate-400'}`}></div>
+                  </button>
+
+                  {/* Quantity Selector - Animado e bem espaçado */}
+                  {isUndercoverEnabled && (
+                    <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-2 duration-300">
+                      <button 
+                        onClick={() => updateUndercoverCount(-1)}
+                        className="w-8 h-8 flex items-center justify-center text-emerald-400 hover:bg-emerald-500/10 rounded-full transition-colors active:scale-90"
+                      >
+                        <Minus size={22} strokeWidth={3} />
+                      </button>
+                      
+                      <div className="bg-emerald-500/20 border-2 border-emerald-500 text-emerald-400 font-black w-12 h-10 flex items-center justify-center rounded-2xl text-xl shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+                        {settings.undercoverCount}
+                      </div>
+                      
+                      <button 
+                        onClick={() => updateUndercoverCount(1)}
+                        className="w-8 h-8 flex items-center justify-center text-emerald-400 hover:bg-emerald-500/10 rounded-full transition-colors active:scale-90"
+                      >
+                        <Plus size={22} strokeWidth={3} />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -190,7 +247,7 @@ const App: React.FC = () => {
             <button 
               onClick={startGame}
               disabled={players.length < 3}
-              className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 py-4 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 py-4 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-2 transition-transform active:scale-95 disabled:opacity-50"
             >
               <Play fill="currentColor" size={20} /> COMEÇAR
             </button>
@@ -205,7 +262,7 @@ const App: React.FC = () => {
                 <button
                   key={cat.id}
                   onClick={() => setupWords(cat.name)}
-                  className="bg-slate-800 p-6 rounded-2xl border border-slate-700 text-center"
+                  className="bg-slate-800 p-6 rounded-2xl border border-slate-700 text-center transition-transform hover:scale-105"
                 >
                   <div className="text-4xl mb-2">{cat.icon}</div>
                   <div className="font-bold">{cat.name}</div>
@@ -226,7 +283,7 @@ const App: React.FC = () => {
               className={`w-full max-w-[280px] aspect-square rounded-3xl border-4 border-dashed flex flex-col items-center justify-center transition-all ${isWordVisible ? 'bg-slate-800 border-cyan-500 scale-100 shadow-2xl' : 'bg-slate-900 border-slate-700'}`}
             >
               {isWordVisible ? (
-                <div className="text-center p-6">
+                <div className="text-center p-6 animate-in zoom-in duration-200">
                   <p className="text-xs text-cyan-400 uppercase font-bold mb-4">Sua palavra:</p>
                   <p className="text-3xl font-black">{players[distributionIndex].word}</p>
                   <EyeOff className="mt-8 text-slate-600 mx-auto" size={32} />
@@ -241,7 +298,7 @@ const App: React.FC = () => {
             <button
               onClick={nextDistribution}
               disabled={!isWordVisible}
-              className={`w-full py-4 rounded-2xl font-bold transition-all ${isWordVisible ? 'bg-white text-slate-900' : 'bg-slate-800 text-slate-500 opacity-50'}`}
+              className={`w-full py-4 rounded-2xl font-bold transition-all ${isWordVisible ? 'bg-white text-slate-900 shadow-lg' : 'bg-slate-800 text-slate-500 opacity-50'}`}
             >
               PRÓXIMO
             </button>
@@ -265,7 +322,7 @@ const App: React.FC = () => {
             </div>
             <button
               onClick={() => setPhase(GamePhase.VOTING)}
-              className="w-full bg-cyan-600 py-4 rounded-2xl font-bold"
+              className="w-full bg-cyan-600 py-4 rounded-2xl font-bold hover:bg-cyan-500 transition-colors"
             >
               VOTAR NO SUSPEITO
             </button>
@@ -280,7 +337,7 @@ const App: React.FC = () => {
                 <button
                   key={p.id}
                   onClick={() => handleVote(p.id)}
-                  className="bg-slate-800 p-6 rounded-2xl border border-slate-700 text-center flex flex-col items-center"
+                  className="bg-slate-800 p-6 rounded-2xl border border-slate-700 text-center flex flex-col items-center hover:border-red-500/50 transition-colors"
                 >
                   <span className="text-4xl mb-2">{p.avatar}</span>
                   <span className="font-bold">{p.name}</span>
@@ -292,26 +349,28 @@ const App: React.FC = () => {
 
         {phase === GamePhase.REVEAL && (
           <div className="flex flex-col items-center justify-center space-y-10 py-10">
-            <div className="text-center">
+            <div className="text-center animate-bounce">
               <Trophy size={80} className="text-yellow-400 mx-auto mb-4" />
               <h2 className="text-sm uppercase text-cyan-400 font-bold tracking-widest">Vitória de</h2>
               <h3 className="text-5xl font-black">{winner}</h3>
             </div>
             <div className="w-full space-y-3">
               {players.map(p => (
-                <div key={p.id} className={`flex items-center justify-between p-4 rounded-xl border ${p.role === PlayerRole.IMPOSTOR ? 'bg-red-900/20 border-red-800' : 'bg-slate-800 border-slate-700'}`}>
+                <div key={p.id} className={`flex items-center justify-between p-4 rounded-xl border ${p.role === PlayerRole.IMPOSTOR ? 'bg-red-900/20 border-red-800' : p.role === PlayerRole.UNDERCOVER ? 'bg-purple-900/20 border-purple-800' : 'bg-slate-800 border-slate-700'}`}>
                   <div className="flex items-center gap-3">
                     <span>{p.avatar}</span>
                     <span className="font-bold">{p.name}</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-slate-700">{p.role}</span>
+                    <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${p.role === PlayerRole.IMPOSTOR ? 'bg-red-600' : p.role === PlayerRole.UNDERCOVER ? 'bg-purple-600' : 'bg-slate-700'}`}>
+                      {p.role}
+                    </span>
                     <p className="text-xs text-slate-400 mt-1">{p.word.split('!')[0]}</p>
                   </div>
                 </div>
               ))}
             </div>
-            <button onClick={resetGame} className="w-full bg-white text-slate-900 py-4 rounded-2xl font-bold">
+            <button onClick={resetGame} className="w-full bg-white text-slate-900 py-4 rounded-2xl font-bold hover:bg-slate-100">
               JOGAR DE NOVO
             </button>
           </div>
@@ -319,7 +378,7 @@ const App: React.FC = () => {
       </main>
 
       <footer className="p-4 text-center text-slate-600 text-[10px] uppercase">
-        Dedução Social • v1.0.1
+        Dedução Social • v1.0.4
       </footer>
 
       {isLoading && (
@@ -328,6 +387,10 @@ const App: React.FC = () => {
           <p className="font-bold">Gerando mistério...</p>
         </div>
       )}
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        .left-7\\.5 { left: 1.875rem; }
+      `}} />
     </div>
   );
 };
