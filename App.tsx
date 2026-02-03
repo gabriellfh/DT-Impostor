@@ -15,7 +15,8 @@ import {
   Vote, 
   Trophy,
   ArrowRight,
-  RotateCcw
+  RotateCcw,
+  Star
 } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -27,7 +28,6 @@ const App: React.FC = () => {
     impostorCount: 1,
     undercoverCount: 0
   });
-  const [isUndercoverEnabled, setIsUndercoverEnabled] = useState(false);
   const [distributionIndex, setDistributionIndex] = useState(0);
   const [isWordVisible, setIsWordVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -131,53 +131,46 @@ const App: React.FC = () => {
     setWinner(null);
   };
 
-  const toggleUndercover = () => {
-    const newVal = !isUndercoverEnabled;
-    setIsUndercoverEnabled(newVal);
-    setSettings({
-      ...settings,
-      undercoverCount: newVal ? 1 : 0
-    });
-  };
-
   const updateUndercoverCount = (val: number) => {
-    const newCount = Math.min(5, Math.max(1, settings.undercoverCount + val));
+    const newCount = Math.min(5, Math.max(0, settings.undercoverCount + val));
     setSettings({ ...settings, undercoverCount: newCount });
   };
 
   const getLabel = () => {
-    if (!isUndercoverEnabled) return "Impostor";
-    return settings.undercoverCount > 1 ? "Impostores" : "Impostor";
+    return settings.undercoverCount > 0 ? "Impostores" : "Impostor";
   };
 
   return (
-    <div className="min-h-screen max-w-md mx-auto bg-slate-900 shadow-2xl flex flex-col overflow-hidden relative">
-      <header className="p-6 text-center border-b border-slate-800 flex justify-between items-center bg-slate-900/50 backdrop-blur-md sticky top-0 z-10">
-        <h1 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
-          IMPOSTOR
-        </h1>
+    <div className="min-h-screen max-w-md mx-auto flex flex-col overflow-hidden relative">
+      <header className="p-6 text-center flex justify-between items-center z-10">
+        <div className="flex items-center gap-2">
+          <Star className="text-yellow-400 fill-yellow-400" size={24} />
+          <h1 className="text-3xl font-extrabold text-white drop-shadow-lg tracking-tighter">
+            IMPOSTOR <span className="text-yellow-400 italic">KIDS</span>
+          </h1>
+        </div>
         {phase !== GamePhase.LOBBY && (
-          <button onClick={resetGame} className="text-slate-400 hover:text-white transition-colors">
-            <RotateCcw size={20} />
+          <button onClick={resetGame} className="bg-white/20 p-2 rounded-full hover:bg-white/30 transition-colors">
+            <RotateCcw size={20} className="text-white" />
           </button>
         )}
       </header>
 
       <main className="flex-1 p-6 overflow-y-auto">
         {phase === GamePhase.LOBBY && (
-          <div className="space-y-6">
-            <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Users className="text-cyan-400" /> Jogadores ({players.length}/10)
+          <div className="space-y-6 animate-in fade-in duration-500">
+            <div className="bg-orange-500/20 backdrop-blur-lg rounded-[2rem] p-6 border border-white/20 shadow-2xl">
+              <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-yellow-300">
+                <Users className="text-yellow-400" /> Amiguinhos ({players.length}/10)
               </h2>
               <div className="space-y-3">
                 {players.map(player => (
-                  <div key={player.id} className="flex items-center justify-between bg-slate-800 p-3 rounded-xl border border-slate-700">
+                  <div key={player.id} className="flex items-center justify-between bg-red-600/20 p-3 rounded-2xl border border-white/10 transition-all hover:scale-[1.02]">
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">{player.avatar}</span>
-                      <span className="font-medium">{player.name}</span>
+                      <span className="text-3xl filter drop-shadow-md">{player.avatar}</span>
+                      <span className="font-bold text-white">{player.name}</span>
                     </div>
-                    <button onClick={() => removePlayer(player.id)} className="text-slate-500 hover:text-red-400 p-1">
+                    <button onClick={() => removePlayer(player.id)} className="text-white/40 hover:text-white p-1">
                       <Trash2 size={18} />
                     </button>
                   </div>
@@ -190,56 +183,44 @@ const App: React.FC = () => {
                   onChange={(e) => setNewPlayerName(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && addPlayer()}
                   placeholder="Nome do amigo..."
-                  className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white"
+                  className="flex-1 bg-white/20 border-2 border-white/10 rounded-2xl px-5 py-4 focus:outline-none focus:border-yellow-400 text-white placeholder:text-white/40 font-bold"
                 />
-                <button onClick={addPlayer} className="bg-cyan-600 px-4 rounded-xl shadow-lg">
-                  <Plus />
+                <button onClick={addPlayer} className="bg-yellow-400 hover:bg-yellow-300 text-red-700 px-5 rounded-2xl shadow-lg transition-all active:scale-90 flex items-center justify-center">
+                  <Plus size={28} strokeWidth={4} />
                 </button>
               </div>
             </div>
 
-            <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700 space-y-4">
-              <h2 className="text-lg font-semibold text-cyan-400">Opções</h2>
+            <div className="bg-red-600/30 backdrop-blur-lg rounded-[2rem] p-6 border border-white/20 shadow-2xl space-y-4">
+              <h2 className="text-xl font-bold text-yellow-400">Opções Legais</h2>
               
-              <div className="flex items-center justify-between bg-slate-900/60 p-4 rounded-3xl border border-slate-700 min-h-[80px]">
-                {/* Texto com margem à direita para nunca encostar nos botões */}
-                <div className="flex-1 mr-4 overflow-hidden">
-                  <span className="text-lg font-bold transition-all duration-300 block truncate">
+              <div className="flex items-center justify-between bg-orange-700/40 p-5 rounded-[1.5rem] border-2 border-orange-400/30">
+                <div className="flex-1 mr-4">
+                  <span className="text-xl font-black text-white italic transition-all duration-300">
                     {getLabel()}
                   </span>
                 </div>
                 
-                <div className="flex items-center gap-4 shrink-0">
-                  {/* Toggle Switch */}
+                <div className="flex items-center gap-3 shrink-0">
                   <button 
-                    onClick={toggleUndercover}
-                    className={`relative w-14 h-7 rounded-full transition-all duration-300 border-2 ${isUndercoverEnabled ? 'bg-emerald-500/20 border-emerald-500' : 'bg-slate-700 border-slate-600'}`}
+                    onClick={() => updateUndercoverCount(-1)}
+                    className="w-12 h-12 flex items-center justify-center bg-white/10 text-white hover:bg-white/20 rounded-full transition-all active:scale-90 disabled:opacity-30"
+                    disabled={settings.undercoverCount === 0}
                   >
-                    <div className={`absolute top-0.5 transition-all duration-300 w-5 h-5 rounded-full shadow-md ${isUndercoverEnabled ? 'left-7.5 bg-emerald-400' : 'left-0.5 bg-slate-400'}`}></div>
+                    <Minus size={28} strokeWidth={4} />
                   </button>
-
-                  {/* Quantity Selector - Animado e bem espaçado */}
-                  {isUndercoverEnabled && (
-                    <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-2 duration-300">
-                      <button 
-                        onClick={() => updateUndercoverCount(-1)}
-                        className="w-8 h-8 flex items-center justify-center text-emerald-400 hover:bg-emerald-500/10 rounded-full transition-colors active:scale-90"
-                      >
-                        <Minus size={22} strokeWidth={3} />
-                      </button>
-                      
-                      <div className="bg-emerald-500/20 border-2 border-emerald-500 text-emerald-400 font-black w-12 h-10 flex items-center justify-center rounded-2xl text-xl shadow-[0_0_15px_rgba(16,185,129,0.1)]">
-                        {settings.undercoverCount}
-                      </div>
-                      
-                      <button 
-                        onClick={() => updateUndercoverCount(1)}
-                        className="w-8 h-8 flex items-center justify-center text-emerald-400 hover:bg-emerald-500/10 rounded-full transition-colors active:scale-90"
-                      >
-                        <Plus size={22} strokeWidth={3} />
-                      </button>
-                    </div>
-                  )}
+                  
+                  <div className="bg-yellow-400 text-red-700 font-black w-14 h-14 flex items-center justify-center rounded-2xl text-2xl shadow-[0_5px_15px_rgba(255,215,0,0.4)]">
+                    {settings.undercoverCount + 1}
+                  </div>
+                  
+                  <button 
+                    onClick={() => updateUndercoverCount(1)}
+                    className="w-12 h-12 flex items-center justify-center bg-white/10 text-white hover:bg-white/20 rounded-full transition-all active:scale-90 disabled:opacity-30"
+                    disabled={settings.undercoverCount >= 5}
+                  >
+                    <Plus size={28} strokeWidth={4} />
+                  </button>
                 </div>
               </div>
             </div>
@@ -247,25 +228,25 @@ const App: React.FC = () => {
             <button 
               onClick={startGame}
               disabled={players.length < 3}
-              className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 py-4 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-2 transition-transform active:scale-95 disabled:opacity-50"
+              className="w-full bg-gradient-to-b from-orange-400 to-red-600 hover:from-orange-300 hover:to-red-500 py-5 rounded-[2rem] font-black text-2xl text-white shadow-[0_8px_0_rgb(154,52,18)] flex items-center justify-center gap-3 transition-all active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:translate-y-0"
             >
-              <Play fill="currentColor" size={20} /> COMEÇAR
+              <Play fill="currentColor" size={28} /> VAMOS JOGAR!
             </button>
           </div>
         )}
 
         {phase === GamePhase.CATEGORY_SELECTION && (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-center">Qual o tema?</h2>
+          <div className="space-y-6 animate-in zoom-in-95 duration-300">
+            <h2 className="text-3xl font-black text-center text-white drop-shadow-lg">Escolha o Tema!</h2>
             <div className="grid grid-cols-2 gap-4">
               {CATEGORIES.map(cat => (
                 <button
                   key={cat.id}
                   onClick={() => setupWords(cat.name)}
-                  className="bg-slate-800 p-6 rounded-2xl border border-slate-700 text-center transition-transform hover:scale-105"
+                  className="bg-white/10 backdrop-blur-md p-6 rounded-[2rem] border-2 border-white/20 text-center transition-all hover:scale-105 active:scale-95 hover:bg-orange-500/20 shadow-xl"
                 >
-                  <div className="text-4xl mb-2">{cat.icon}</div>
-                  <div className="font-bold">{cat.name}</div>
+                  <div className="text-6xl mb-3 filter drop-shadow-lg">{cat.icon}</div>
+                  <div className="font-black text-xl text-white tracking-tight">{cat.name}</div>
                 </button>
               ))}
             </div>
@@ -273,74 +254,79 @@ const App: React.FC = () => {
         )}
 
         {phase === GamePhase.WORD_DISTRIBUTION && (
-          <div className="flex flex-col items-center justify-center h-full space-y-12 py-10">
+          <div className="flex flex-col items-center justify-center h-full space-y-12 py-6 animate-in slide-in-from-bottom-10 duration-500">
             <div className="text-center">
-              <span className="text-7xl mb-4 block">{players[distributionIndex].avatar}</span>
-              <h2 className="text-3xl font-extrabold">{players[distributionIndex].name}</h2>
+              <span className="text-8xl mb-4 block filter drop-shadow-2xl animate-bounce">{players[distributionIndex].avatar}</span>
+              <h2 className="text-4xl font-black text-white drop-shadow-md">{players[distributionIndex].name}</h2>
+              <p className="text-yellow-200 font-bold mt-2 uppercase tracking-widest text-sm">Sua vez de olhar!</p>
             </div>
+            
             <button 
               onClick={() => setIsWordVisible(!isWordVisible)}
-              className={`w-full max-w-[280px] aspect-square rounded-3xl border-4 border-dashed flex flex-col items-center justify-center transition-all ${isWordVisible ? 'bg-slate-800 border-cyan-500 scale-100 shadow-2xl' : 'bg-slate-900 border-slate-700'}`}
+              className={`w-full max-w-[280px] aspect-square rounded-[3rem] border-8 border-dashed flex flex-col items-center justify-center transition-all duration-500 ${isWordVisible ? 'bg-white border-yellow-400 rotate-0 scale-105 shadow-[0_20px_50px_rgba(255,215,0,0.3)]' : 'bg-red-900/40 border-white/20 rotate-3'}`}
             >
               {isWordVisible ? (
-                <div className="text-center p-6 animate-in zoom-in duration-200">
-                  <p className="text-xs text-cyan-400 uppercase font-bold mb-4">Sua palavra:</p>
-                  <p className="text-3xl font-black">{players[distributionIndex].word}</p>
-                  <EyeOff className="mt-8 text-slate-600 mx-auto" size={32} />
+                <div className="text-center p-6 animate-in zoom-in duration-300">
+                  <p className="text-sm text-red-600 uppercase font-black mb-4 tracking-tighter">Guarde Segredo! 🤫</p>
+                  <p className="text-4xl font-black text-red-800 leading-tight">{players[distributionIndex].word}</p>
+                  <EyeOff className="mt-8 text-red-300 mx-auto" size={40} />
                 </div>
               ) : (
                 <div className="text-center">
-                  <Eye size={48} className="text-slate-600 mx-auto mb-4" />
-                  <p className="font-bold text-slate-400">Ver palavra</p>
+                  <Eye size={60} className="text-white/30 mx-auto mb-4" />
+                  <p className="font-black text-white/50 text-xl">TOQUE PARA VER</p>
                 </div>
               )}
             </button>
+            
             <button
               onClick={nextDistribution}
               disabled={!isWordVisible}
-              className={`w-full py-4 rounded-2xl font-bold transition-all ${isWordVisible ? 'bg-white text-slate-900 shadow-lg' : 'bg-slate-800 text-slate-500 opacity-50'}`}
+              className={`w-full py-5 rounded-[2rem] font-black text-xl transition-all ${isWordVisible ? 'bg-yellow-400 text-red-800 shadow-lg active:scale-95' : 'bg-white/10 text-white/20 opacity-50'}`}
             >
-              PRÓXIMO
+              CONCLUÍDO! ✅
             </button>
           </div>
         )}
 
         {phase === GamePhase.DISCUSSION && (
-          <div className="space-y-8 py-4">
-            <div className="text-center space-y-2">
-              <MessageSquare className="text-cyan-400 mx-auto" size={48} />
-              <h2 className="text-2xl font-bold">Discussão</h2>
-              <p className="text-slate-400">Descreva sua palavra rapidamente!</p>
+          <div className="space-y-8 py-4 animate-in fade-in duration-500">
+            <div className="text-center space-y-3">
+              <div className="w-24 h-24 bg-yellow-400 rounded-full flex items-center justify-center mx-auto shadow-xl">
+                <MessageSquare className="text-red-700" size={48} />
+              </div>
+              <h2 className="text-3xl font-black text-white">Hora de Falar!</h2>
+              <p className="text-yellow-200 font-bold text-lg">Conte algo sobre sua palavra sem dizer o nome dela!</p>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-4">
               {players.filter(p => !p.isEliminated).map(p => (
-                <div key={p.id} className="bg-slate-800/50 p-4 rounded-2xl border border-slate-700 text-center">
-                  <span className="text-3xl block mb-1">{p.avatar}</span>
-                  <span className="font-bold text-sm">{p.name}</span>
+                <div key={p.id} className="bg-red-600/20 p-5 rounded-[2rem] border border-white/10 text-center shadow-lg">
+                  <span className="text-5xl block mb-2">{p.avatar}</span>
+                  <span className="font-black text-white">{p.name}</span>
                 </div>
               ))}
             </div>
             <button
               onClick={() => setPhase(GamePhase.VOTING)}
-              className="w-full bg-cyan-600 py-4 rounded-2xl font-bold hover:bg-cyan-500 transition-colors"
+              className="w-full bg-gradient-to-r from-orange-400 to-red-600 py-5 rounded-[2rem] font-black text-xl text-white shadow-lg active:scale-95"
             >
-              VOTAR NO SUSPEITO
+              QUEM É O IMPOSTOR? 🤔
             </button>
           </div>
         )}
 
         {phase === GamePhase.VOTING && (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-center">Quem sai?</h2>
+          <div className="space-y-6 animate-in slide-in-from-right-10 duration-300">
+            <h2 className="text-3xl font-black text-center text-white">Escolha o Suspeito!</h2>
             <div className="grid grid-cols-2 gap-4">
               {players.filter(p => !p.isEliminated).map(p => (
                 <button
                   key={p.id}
                   onClick={() => handleVote(p.id)}
-                  className="bg-slate-800 p-6 rounded-2xl border border-slate-700 text-center flex flex-col items-center hover:border-red-500/50 transition-colors"
+                  className="bg-white/10 p-6 rounded-[2rem] border-2 border-white/10 text-center flex flex-col items-center hover:bg-yellow-500/20 hover:border-yellow-400 transition-all active:scale-95"
                 >
-                  <span className="text-4xl mb-2">{p.avatar}</span>
-                  <span className="font-bold">{p.name}</span>
+                  <span className="text-6xl mb-3 filter drop-shadow-lg">{p.avatar}</span>
+                  <span className="font-black text-white text-lg">{p.name}</span>
                 </button>
               ))}
             </div>
@@ -348,49 +334,45 @@ const App: React.FC = () => {
         )}
 
         {phase === GamePhase.REVEAL && (
-          <div className="flex flex-col items-center justify-center space-y-10 py-10">
-            <div className="text-center animate-bounce">
-              <Trophy size={80} className="text-yellow-400 mx-auto mb-4" />
-              <h2 className="text-sm uppercase text-cyan-400 font-bold tracking-widest">Vitória de</h2>
-              <h3 className="text-5xl font-black">{winner}</h3>
+          <div className="flex flex-col items-center justify-center space-y-10 py-6 animate-in zoom-in-50 duration-500">
+            <div className="text-center">
+              <Trophy size={100} className="text-yellow-400 mx-auto mb-4 filter drop-shadow-[0_0_20px_rgba(255,215,0,0.5)] animate-pulse" />
+              <h2 className="text-xl uppercase text-yellow-300 font-black tracking-widest italic">Uhul! Vitória dos</h2>
+              <h3 className="text-6xl font-black text-white drop-shadow-lg leading-tight">{winner}</h3>
             </div>
             <div className="w-full space-y-3">
               {players.map(p => (
-                <div key={p.id} className={`flex items-center justify-between p-4 rounded-xl border ${p.role === PlayerRole.IMPOSTOR ? 'bg-red-900/20 border-red-800' : p.role === PlayerRole.UNDERCOVER ? 'bg-purple-900/20 border-purple-800' : 'bg-slate-800 border-slate-700'}`}>
+                <div key={p.id} className={`flex items-center justify-between p-4 rounded-2xl border-2 ${p.role === PlayerRole.IMPOSTOR ? 'bg-red-500/30 border-red-500' : p.role === PlayerRole.UNDERCOVER ? 'bg-orange-500/30 border-orange-500' : 'bg-white/10 border-white/20'}`}>
                   <div className="flex items-center gap-3">
-                    <span>{p.avatar}</span>
-                    <span className="font-bold">{p.name}</span>
+                    <span className="text-3xl">{p.avatar}</span>
+                    <span className="font-black text-white">{p.name}</span>
                   </div>
                   <div className="text-right">
-                    <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${p.role === PlayerRole.IMPOSTOR ? 'bg-red-600' : p.role === PlayerRole.UNDERCOVER ? 'bg-purple-600' : 'bg-slate-700'}`}>
+                    <span className={`text-[10px] uppercase font-black px-3 py-1 rounded-full ${p.role === PlayerRole.IMPOSTOR ? 'bg-red-500 text-white' : p.role === PlayerRole.UNDERCOVER ? 'bg-orange-500 text-white' : 'bg-white/30 text-white'}`}>
                       {p.role}
                     </span>
-                    <p className="text-xs text-slate-400 mt-1">{p.word.split('!')[0]}</p>
+                    <p className="text-sm font-bold text-white/60 mt-1">{p.word.split('!')[0]}</p>
                   </div>
                 </div>
               ))}
             </div>
-            <button onClick={resetGame} className="w-full bg-white text-slate-900 py-4 rounded-2xl font-bold hover:bg-slate-100">
-              JOGAR DE NOVO
+            <button onClick={resetGame} className="w-full bg-yellow-400 text-red-800 py-5 rounded-[2rem] font-black text-2xl shadow-xl hover:bg-yellow-300 active:translate-y-1">
+              JOGAR NOVAMENTE! 🎈
             </button>
           </div>
         )}
       </main>
 
-      <footer className="p-4 text-center text-slate-600 text-[10px] uppercase">
-        Dedução Social • v1.0.4
+      <footer className="p-4 text-center text-white/30 text-[10px] font-black uppercase tracking-tighter">
+        Dedução Social Kids • v1.1.1 🔥
       </footer>
 
       {isLoading && (
-        <div className="absolute inset-0 bg-slate-950/90 z-50 flex flex-col items-center justify-center p-8">
-          <div className="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="font-bold">Gerando mistério...</p>
+        <div className="absolute inset-0 bg-red-950/95 z-50 flex flex-col items-center justify-center p-8 animate-in fade-in duration-300">
+          <div className="w-20 h-20 border-8 border-yellow-400 border-t-transparent rounded-full animate-spin mb-6"></div>
+          <p className="font-black text-3xl text-white text-center animate-pulse">PREPARANDO A BAGUNÇA...</p>
         </div>
       )}
-
-      <style dangerouslySetInnerHTML={{ __html: `
-        .left-7\\.5 { left: 1.875rem; }
-      `}} />
     </div>
   );
 };
