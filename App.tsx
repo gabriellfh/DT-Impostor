@@ -142,7 +142,7 @@ const App: React.FC = () => {
       {/* Header */}
       <header className="p-6 text-center border-b border-slate-800 flex justify-between items-center bg-slate-900/50 backdrop-blur-md sticky top-0 z-10">
         <h1 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
-          IMPOSTOR <span className="text-white font-light text-sm ml-1">O INTRUSO</span>
+          IMPOSTOR
         </h1>
         {phase !== GamePhase.LOBBY && (
           <button onClick={resetGame} className="text-slate-400 hover:text-white transition-colors">
