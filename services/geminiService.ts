@@ -1,7 +1,7 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { WordPair } from "../types";
-import { SYSTEM_PROMPT } from "../constants";
+import { WordPair } from "../types.ts";
+import { SYSTEM_PROMPT } from "../constants.tsx";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
