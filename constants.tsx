@@ -1,5 +1,5 @@
 
-export const CATEGORIES = [
+export const FOOD_CATEGORIES = [
   { id: 'healthy', name: 'Comidas Saudáveis', icon: '🥗' },
   { id: 'fried', name: 'Comidas Fritas', icon: '🍟' },
   { id: 'meals', name: 'Almoço e Jantar', icon: '🍽️' },
@@ -7,6 +7,10 @@ export const CATEGORIES = [
   { id: 'picnic', name: 'Lanches no Parque', icon: '🧺' },
   { id: 'fast_food', name: 'Fast Food', icon: '🍔' },
   { id: 'desserts_drinks', name: 'Doces e Bebidas', icon: '🍦' },
+];
+
+export const MAIN_CATEGORIES = [
+  { id: 'food_group', name: 'Comida', icon: '🥘', isGroup: true },
   { id: 'animals', name: 'Animais', icon: '🐶' },
   { id: 'movies', name: 'Filmes', icon: '🎬' },
   { id: 'objects', name: 'Objetos', icon: '🪑' },

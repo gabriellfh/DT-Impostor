@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { GamePhase, Player, PlayerRole, GameSettings, WordPair, GameMode } from './types.ts';
-import { CATEGORIES, AVATARS } from './constants.tsx';
+import { MAIN_CATEGORIES, FOOD_CATEGORIES, AVATARS } from './constants.tsx';
 import { generateWordPair } from './services/geminiService.ts';
 import { 
   Users, 
@@ -20,7 +20,8 @@ import {
   Edit2,
   Ghost,
   Search,
-  UserSecret
+  UserSecret,
+  ChevronLeft
 } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -29,11 +30,12 @@ const App: React.FC = () => {
   const [newPlayerName, setNewPlayerName] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [settings, setSettings] = useState<GameSettings>({
-    category: 'Comida',
+    category: '',
     impostorCount: 1,
     undercoverCount: 0,
     mode: GameMode.IMPOSTOR
   });
+  const [isViewingFoodFolder, setIsViewingFoodFolder] = useState(false);
   const [distributionIndex, setDistributionIndex] = useState(0);
   const [isWordVisible, setIsWordVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -89,6 +91,7 @@ const App: React.FC = () => {
   const startGame = () => {
     if (players.length < 3) return;
     setPhase(GamePhase.CATEGORY_SELECTION);
+    setIsViewingFoodFolder(false);
   };
 
   const setupWords = async (category: string) => {
@@ -156,6 +159,7 @@ const App: React.FC = () => {
     setPlayers(players.map(p => ({ ...p, isEliminated: false, word: '', role: PlayerRole.CITIZEN })));
     setPhase(GamePhase.LOBBY);
     setWinner(null);
+    setIsViewingFoodFolder(false);
   };
 
   const updateImpostorCount = (val: number) => {
@@ -165,6 +169,14 @@ const App: React.FC = () => {
 
   const setGameMode = (mode: GameMode) => {
     setSettings({ ...settings, mode });
+  };
+
+  const handleCategoryClick = (cat: any) => {
+    if (cat.isGroup) {
+      setIsViewingFoodFolder(true);
+    } else {
+      setupWords(cat.name);
+    }
   };
 
   return (
@@ -292,12 +304,29 @@ const App: React.FC = () => {
         )}
 
         {phase === GamePhase.CATEGORY_SELECTION && (
-          <div className="space-y-4 animate-in zoom-in-95 duration-300 w-full flex flex-col h-full overflow-hidden">
-            <h2 className="text-2xl font-black text-center text-white drop-shadow-lg shrink-0">Escolha o Tema!</h2>
-            <div className="grid grid-cols-2 gap-3 pb-6 overflow-y-auto no-scrollbar pr-1 flex-1">
-              {CATEGORIES.map(cat => (
-                <button key={cat.id} onClick={() => setupWords(cat.name)} className="bg-white/10 backdrop-blur-md p-4 rounded-[1.5rem] border-2 border-white/20 text-center transition-all hover:scale-105 active:scale-95 shadow-xl flex flex-col items-center justify-center min-h-[110px]">
-                  <div className="text-4xl mb-2 filter drop-shadow-lg">{cat.icon}</div>
+          <div className="space-y-4 animate-in slide-in-from-right-10 duration-300 w-full flex flex-col h-full overflow-hidden">
+            <div className="flex items-center justify-between px-2 shrink-0">
+              {isViewingFoodFolder && (
+                <button 
+                  onClick={() => setIsViewingFoodFolder(false)}
+                  className="bg-white/20 p-2 rounded-full text-white active:scale-90 transition-transform"
+                >
+                  <ChevronLeft size={24} />
+                </button>
+              )}
+              <h2 className={`text-2xl font-black text-center text-white drop-shadow-lg flex-1 ${!isViewingFoodFolder ? 'ml-0' : 'mr-8'}`}>
+                {isViewingFoodFolder ? 'Tipos de Comida' : 'Escolha o Tema!'}
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pb-6 overflow-y-auto no-scrollbar pr-1 flex-1 mt-2">
+              {(isViewingFoodFolder ? (FOOD_CATEGORIES as any[]) : (MAIN_CATEGORIES as any[])).map(cat => (
+                <button 
+                  key={cat.id} 
+                  onClick={() => handleCategoryClick(cat)} 
+                  className={`bg-white/10 backdrop-blur-md p-4 rounded-[1.5rem] border-2 border-white/20 text-center transition-all hover:scale-105 active:scale-95 shadow-xl flex flex-col items-center justify-center min-h-[110px] relative overflow-hidden group`}
+                >
+                  <div className="text-4xl mb-2 filter drop-shadow-lg group-active:scale-110 transition-transform">{cat.icon}</div>
                   <div className="font-black text-sm text-white leading-tight">{cat.name}</div>
                 </button>
               ))}

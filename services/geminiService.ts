@@ -3,9 +3,10 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { WordPair } from "../types.ts";
 import { SYSTEM_PROMPT } from "../constants.tsx";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
-
 export const generateWordPair = async (category: string): Promise<WordPair> => {
+  // Fix: Initialize GoogleGenAI inside the function right before use and use process.env.API_KEY directly.
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
@@ -24,6 +25,7 @@ export const generateWordPair = async (category: string): Promise<WordPair> => {
       },
     });
 
+    // Fix: Access .text property directly instead of calling it as a method.
     const result = JSON.parse(response.text || '{}');
     return {
       citizenWord: result.citizenWord || 'Maçã',
