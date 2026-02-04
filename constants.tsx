@@ -69,6 +69,22 @@ export const LOCAL_WORD_DATA: Record<string, string[][]> = {
     ['Prato', 'Copo', 'Talher', 'Panela'],
     ['Faca', 'Colher', 'Garfo'],
     ['Liquidificador', 'Cafeteira', 'Frigideira', 'Peneira']
+  ],
+  'Lugares': [
+    ['Casa', 'Apartamento', 'Escola', 'Hospital', 'Supermercado', 'Parque', 'Praia', 'Rua', 'Praça', 'Estação de trem'],
+    ['Floresta', 'Montanha', 'Rio', 'Lago', 'Deserto', 'Ilha', 'Caverna', 'Cachoeira', 'Vale', 'Planície'],
+    ['Cinema', 'Zoológico', 'Piscina', 'Estádio', 'Circo', 'Parque de diversões', 'Biblioteca', 'Museu', 'Teatro', 'Praia de nudismo'],
+    ['Escritório', 'Fábrica', 'Loja', 'Restaurante', 'Fazenda', 'Construção', 'Banco', 'Posto de gasolina', 'Hotel', 'Canteiro de obras'],
+    ['Castelo', 'Pirâmide', 'Templo', 'Vulcão', 'Geleira', 'Oásis', 'Selva', 'Savana', 'Polo Norte', 'Abismo oceânico']
+  ],
+  'Esportes': [
+    ['Futebol', 'Futsal', 'Basquete', 'Handebol', 'Rugby', 'Futebol americano', 'Hóquei no gelo', 'Polo aquático', 'Corfebol'],
+    ['Atletismo', 'Natação', 'Ciclismo', 'Triatlo', 'Vela', 'Remo', 'Canoagem', 'Hipismo', 'Automobilismo'],
+    ['Golfe', 'Tiro com arco', 'Tiro esportivo', 'Dardos', 'Sinuca', 'Bocha'],
+    ['Voleibol', 'Vôlei de praia', 'Tênis', 'Tênis de mesa', 'Badminton', 'Squash', 'Padel'],
+    ['Boxe', 'Judô', 'Karatê', 'Taekwondo', 'Jiu-jitsu', 'MMA', 'Luta livre', 'Esgrima'],
+    ['Ginástica artística', 'Ginástica rítmica', 'Saltos ornamentais', 'Patinação artística', 'Nado sincronizado', 'Surfe'],
+    ['Beisebol', 'Críquete', 'Snowboard', 'Esqui', 'Parkour', 'Paintball', 'Xadrez (esportivo)']
   ]
 };
 
