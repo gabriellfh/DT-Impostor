@@ -1,16 +1,6 @@
 
-export const FOOD_CATEGORIES = [
-  { id: 'healthy', name: 'Comidas Saudáveis', icon: '🥗' },
-  { id: 'fried', name: 'Comidas Fritas', icon: '🍟' },
-  { id: 'meals', name: 'Almoço e Jantar', icon: '🍽️' },
-  { id: 'afternoon_snack', name: 'Lanches da Tarde', icon: '🥪' },
-  { id: 'picnic', name: 'Lanches no Parque', icon: '🧺' },
-  { id: 'fast_food', name: 'Fast Food', icon: '🍔' },
-  { id: 'desserts_drinks', name: 'Doces e Bebidas', icon: '🍦' },
-];
-
 export const MAIN_CATEGORIES = [
-  { id: 'food_group', name: 'Comida', icon: '🥘', isGroup: true },
+  { id: 'food', name: 'Comida', icon: '🥘' },
   { id: 'animals', name: 'Animais', icon: '🐶' },
   { id: 'movies', name: 'Filmes', icon: '🎬' },
   { id: 'objects', name: 'Objetos', icon: '🪑' },
@@ -22,6 +12,24 @@ export const MAIN_CATEGORIES = [
 
 // Dados estruturados para sorteio instantâneo (Zero Latência)
 export const LOCAL_WORD_DATA: Record<string, string[][]> = {
+  'Comida': [
+    ['Maçã', 'Banana', 'Pêra', 'Uva', 'Morango', 'Melancia'],
+    ['Brócolis', 'Cenoura', 'Alface', 'Espinafre', 'Beterraba'],
+    ['Batata Frita', 'Onion Rings', 'Nuggets', 'Polenta Frita'],
+    ['Pastel', 'Coxinha', 'Quibe', 'Enroladinho', 'Empada'],
+    ['Lasanha', 'Canelone', 'Ravioli', 'Nhoque', 'Espaguete'],
+    ['Strogonoff', 'Fricassê', 'Escondidinho', 'Feijoada'],
+    ['Hambúrguer', 'Hot Dog', 'X-Salada', 'X-Burguer', 'Taco'],
+    ['Pizza', 'Calzone', 'Focaccia', 'Bruschetta'],
+    ['Sushi', 'Sashimi', 'Temaki', 'Guioza'],
+    ['Sorvete', 'Açaí', 'Picolé', 'Gelato', 'Milkshake'],
+    ['Chocolate', 'Bombom', 'Trufa', 'Brigadeiro'],
+    ['Pudim', 'Mousse', 'Gelatina', 'Quindim', 'Pavê'],
+    ['Café', 'Chá', 'Chocolate Quente', 'Cappuccino'],
+    ['Refrigerante', 'Suco', 'Limonada', 'Chá Gelado', 'Guaraná'],
+    ['Sanduíche', 'Misto Quente', 'Bauru', 'Tapioca'],
+    ['Croissant', 'Pão de Queijo', 'Baguete', 'Donut']
+  ],
   'Animais': [
     ['Elefante', 'Leão', 'Tigre', 'Girafa', 'Zebra'],
     ['Urso polar', 'Urso pardo', 'Gorila', 'Chimpanzé', 'Orangotango'],
@@ -51,6 +59,16 @@ export const LOCAL_WORD_DATA: Record<string, string[][]> = {
     ['Mary Poppins', 'O Mágico de Oz', 'A Fantástica Fábrica de Chocolate'],
     ['Paddington', 'O Pequeno Stuart Little', 'Christopher Robin'],
     ['Turma da Mônica - Laços', 'O Menino que Descobriu o Vento']
+  ],
+  'Objetos': [
+    ['Lápis', 'Caneta', 'Borracha', 'Apagador', 'Estojo'],
+    ['Caderno', 'Livro', 'Mochila', 'Régua'],
+    ['Cadeira', 'Mesa', 'Sofá', 'Cama'],
+    ['Geladeira', 'Fogão', 'Micro-ondas'],
+    ['Televisão', 'Computador', 'Celular'],
+    ['Prato', 'Copo', 'Talher', 'Panela'],
+    ['Faca', 'Colher', 'Garfo'],
+    ['Liquidificador', 'Cafeteira', 'Frigideira', 'Peneira']
   ]
 };
 
@@ -65,7 +83,5 @@ Você é um mestre de jogo para o jogo "Impostor".
 Gere um par de palavras relacionadas mas diferentes.
 
 A "citizenWord" (palavra do cidadão) e a "undercoverWord" (palavra do espião/infiltrado) devem ser do mesmo campo semântico.
-Exemplo: Categoria "Tecnologia" -> Celular e Tablet.
-
 Retorne APENAS um JSON: {"citizenWord": "...", "undercoverWord": "..."}.
 `;
