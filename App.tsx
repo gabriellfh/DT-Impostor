@@ -189,7 +189,7 @@ const App: React.FC = () => {
                       {editingId === player.id ? (
                         <input
                           autoFocus
-                          className="bg-transparent border-b-2 border-yellow-400 text-white font-bold text-sm w-full outline-none"
+                          className="bg-transparent border-b-2 border-yellow-400 text-white font-bold text-base w-full outline-none"
                           value={player.name}
                           onChange={(e) => updatePlayerName(player.id, e.target.value)}
                           onBlur={() => setEditingId(null)}
@@ -200,7 +200,7 @@ const App: React.FC = () => {
                           onClick={() => setEditingId(player.id)}
                           className="flex items-center gap-2 cursor-pointer flex-1 py-1"
                         >
-                          <span className="font-bold text-white text-sm truncate max-w-[150px]">{player.name}</span>
+                          <span className="font-bold text-white text-base truncate max-w-[150px]">{player.name}</span>
                           <Edit2 size={12} className="text-white/20 group-hover:text-white/50 shrink-0" />
                         </div>
                       )}
@@ -218,7 +218,7 @@ const App: React.FC = () => {
                     onChange={(e) => setNewPlayerName(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addPlayer()}
                     placeholder="Novo amigo..."
-                    className="flex-1 bg-white/10 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-yellow-400 text-white placeholder:text-white/30 font-bold text-sm"
+                    className="flex-1 bg-white/10 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-yellow-400 text-white placeholder:text-white/30 font-bold text-base"
                   />
                   <button onClick={addPlayer} className="bg-yellow-400 hover:bg-yellow-300 text-red-700 w-12 h-12 rounded-2xl shadow-lg transition-all active:scale-90 flex items-center justify-center shrink-0">
                     <Plus size={24} strokeWidth={4} />
@@ -336,7 +336,7 @@ const App: React.FC = () => {
               {players.filter(p => !p.isEliminated).map(p => (
                 <button key={p.id} onClick={() => handleVote(p.id)} className="bg-white/10 p-4 rounded-[1.5rem] border-2 border-white/10 flex flex-col items-center hover:bg-yellow-500/20 transition-all">
                   <span className="text-5xl mb-2">{p.avatar}</span>
-                  <span className="font-black text-white text-sm">{p.name}</span>
+                  <span className="font-black text-white text-base">{p.name}</span>
                 </button>
               ))}
             </div>
@@ -351,7 +351,7 @@ const App: React.FC = () => {
             <div className="w-full space-y-2 max-h-[30vh] overflow-y-auto no-scrollbar">
               {players.map(p => (
                 <div key={p.id} className={`flex items-center justify-between p-3 rounded-2xl border-2 ${p.role === PlayerRole.IMPOSTOR ? 'bg-red-500/30 border-red-500' : p.role === PlayerRole.UNDERCOVER ? 'bg-orange-500/30 border-orange-500' : 'bg-white/10 border-white/20'}`}>
-                  <div className="flex items-center gap-3"><span className="text-2xl">{p.avatar}</span><span className="font-black text-white text-sm">{p.name}</span></div>
+                  <div className="flex items-center gap-3"><span className="text-2xl">{p.avatar}</span><span className="font-black text-white text-base">{p.name}</span></div>
                   <div className="text-right">
                     <span className={`text-[8px] uppercase font-black px-2 py-1 rounded-full ${p.role === PlayerRole.IMPOSTOR ? 'bg-red-500 text-white' : p.role === PlayerRole.UNDERCOVER ? 'bg-orange-500 text-white' : 'bg-white/30 text-white'}`}>{p.role}</span>
                     <p className="text-xs font-bold text-white/60 mt-0.5">{p.word.split('!')[0]}</p>
