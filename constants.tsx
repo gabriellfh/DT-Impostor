@@ -20,6 +20,40 @@ export const MAIN_CATEGORIES = [
   { id: 'random', name: 'Aleatório', icon: '🎲' }
 ];
 
+// Dados estruturados para sorteio instantâneo (Zero Latência)
+export const LOCAL_WORD_DATA: Record<string, string[][]> = {
+  'Animais': [
+    ['Elefante', 'Leão', 'Tigre', 'Girafa', 'Zebra'],
+    ['Urso polar', 'Urso pardo', 'Gorila', 'Chimpanzé', 'Orangotango'],
+    ['Lobo', 'Raposa', 'Coiote', 'Lince', 'Puma'],
+    ['Cavalo', 'Vaca', 'Porco', 'Ovelha', 'Cabra'],
+    ['Golfinho', 'Baleia', 'Foca', 'Morsa', 'Lontra'],
+    ['Águia', 'Coruja', 'Papagaio', 'Arara', 'Tucano'],
+    ['Pinguim', 'Avestruz', 'Pavão', 'Pelicano', 'Beija-flor'],
+    ['Galo', 'Galinha', 'Pato', 'Ganso', 'Peru'],
+    ['Cobra', 'Jacaré', 'Crocodilo', 'Tartaruga', 'Camaleão'],
+    ['Sapo', 'Rã', 'Iguana', 'Lagarto'],
+    ['Tubarão', 'Polvo', 'Lagosta', 'Cavalo-marinho', 'Peixe'],
+    ['Caranguejo', 'Estrela-do-mar'],
+    ['Escorpião', 'Aranha', 'Abelha', 'Formiga', 'Porco-espinho'],
+    ['Hamster', 'Rato', 'Esquilo', 'Porquinho-da-índia', 'Tatu']
+  ],
+  'Filmes': [
+    ['Toy Story', 'Toy Story 5', 'Monstros S.A.', 'Vida de Inseto'],
+    ['Procurando Nemo', 'Luca', 'A Pequena Sereia', 'Shark Tale'],
+    ['Os Incríveis', 'Super Mario Galaxy: O Filme', 'Detona Ralph', 'Wi-Fi Ralph'],
+    ['Frozen', 'Moana', 'Enrolados', 'A Bela e a Fera', 'Mulan', 'Aladdin'],
+    ['O Rei Leão', 'Madagascar', 'Zootopia', 'A Era do Gelo'],
+    ['Shrek', 'Kung Fu Panda', 'Como Treinar Seu Dragão', 'Gato de Botas'],
+    ['Wall-E', 'Soul', 'Divertida Mente', 'Ratatouille'],
+    ['Viva - A Vida é uma Festa', 'Encanto', 'Raya e o Último Dragão'],
+    ['Meu Amigo Totoro', 'Castelo no Céu', 'Ponyo'],
+    ['Mary Poppins', 'O Mágico de Oz', 'A Fantástica Fábrica de Chocolate'],
+    ['Paddington', 'O Pequeno Stuart Little', 'Christopher Robin'],
+    ['Turma da Mônica - Laços', 'O Menino que Descobriu o Vento']
+  ]
+};
+
 export const AVATARS = [
   '🦊', '🐼', '🐨', '🦁', '🐯', '🐸', '🐙', '🦄', '🐲', '🐧',
   '🐶', '🐱', '🐹', '🐰', '🦒', '🐘', '🦏', '🐎', '🐖', '🐑',
@@ -28,30 +62,10 @@ export const AVATARS = [
 
 export const SYSTEM_PROMPT = `
 Você é um mestre de jogo para o jogo "Impostor". 
-Sua tarefa é gerar um par de palavras relacionadas mas diferentes para a categoria solicitada.
-
-REGRAS PARA A CATEGORIA "FILMES":
-Escolha dois filmes/séries da lista abaixo que sejam similares (mesmo estilo, estúdio ou tema). Exemplo: Toy Story e Monstros S.A. (Pixar), ou Frozen e Moana (Princesas Disney).
-LISTA DE FILMES DISPONÍVEIS:
-- Toy Story, Toy Story 5, Procurando Nemo, Os Incríveis, Vida de Inseto, Divertida Mente, Wall-E, Up - Altas Aventuras, Ratatouille, Valente, Monstros S.A., Viva - A Vida é uma Festa, Luca, Soul.
-- Moana, Frozen, Zootopia, O Rei Leão, Mulan, A Bela e a Fera, Aladdin, A Pequena Sereia, Encanto, Raya e o Último Dragão, A Princesa e o Sapo, Detona Ralph, Wi-Fi Ralph, Dumbo.
-- Shrek, Kung Fu Panda, Como Treinar Seu Dragão, A Era do Gelo, Madagascar, Trolls.
-- Meu Amigo Totoro, Castelo no Céu.
-- A Fantástica Fábrica de Chocolate, Turma da Mônica - Laços, O Pequeno Stuart Little, O Menino que Descobriu o Vento, Paddington, O Quebra-Nozes e os Quatro Reinos, Christopher Robin, O Mágico de Oz, Mary Poppins.
-- Super Mario Galaxy: O Filme.
-
-REGRAS PARA A CATEGORIA "ANIMAIS":
-Escolha ALEATORIAMENTE um desses subgrupos:
-1. Savana: Elefante, leão, tigre, girafa, zebra.
-2. Grandes: Urso polar, urso pardo, gorila, chimpanzé, orangotango.
-3. Predadores: Lobo, raposa, coiote, lince, puma.
-4. Fazenda: Cavalo, vaca, porco, ovelha, cabra.
-5. Mamíferos Aquáticos: Golfinho, baleia, foca, morsa, lontra.
-6. Pássaros: Águia, coruja, papagaio, arara, tucano, pinguim, avestruz, pavão, pelicano, beija-flor, galo, galinha, pato, ganso, peru.
-7. Répteis/Anfíbios: Cobra, jacaré, crocodilo, tartaruga, camaleão, sapo, rã, iguana, lagarto.
-8. Marinhos: Tubarão, polvo, lagosta, cavalo-marinho, peixe, caranguejo, estrela-do-mar.
-9. Insetos/Pequenos: Escorpião, aranha, abelha, formiga, porco-espinho, hamster, rato, esquilo, porquinho-da-índia, tatu.
+Gere um par de palavras relacionadas mas diferentes.
 
 A "citizenWord" (palavra do cidadão) e a "undercoverWord" (palavra do espião/infiltrado) devem ser do mesmo campo semântico.
-Retorne APENAS um JSON válido no formato: {"citizenWord": "...", "undercoverWord": "..."}.
+Exemplo: Categoria "Tecnologia" -> Celular e Tablet.
+
+Retorne APENAS um JSON: {"citizenWord": "...", "undercoverWord": "..."}.
 `;
