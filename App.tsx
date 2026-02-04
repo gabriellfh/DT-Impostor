@@ -106,10 +106,8 @@ const App: React.FC = () => {
           word = 'Você é o IMPOSTOR! (Tente descobrir a palavra)';
         }
       } else {
-        // No modo ESPIÃO, o espião recebe a undercoverWord
-        // A contagem de impostores aqui dita quantos espiões existem
         if (idx < settings.impostorCount) {
-          role = PlayerRole.UNDERCOVER; // Usamos UNDERCOVER internamente para o espião
+          role = PlayerRole.UNDERCOVER; 
           word = words.undercoverWord;
         }
       }
@@ -166,8 +164,6 @@ const App: React.FC = () => {
   };
 
   const setGameMode = (mode: GameMode) => {
-    // Garantir que temos ao menos 1 impostor ao mudar de modo se estava em 0, 
-    // ou manter a preferência do usuário
     setSettings({ ...settings, mode });
   };
 
@@ -191,7 +187,6 @@ const App: React.FC = () => {
       <main className="flex-1 p-4 overflow-y-auto no-scrollbar overscroll-contain flex flex-col justify-center">
         {phase === GamePhase.LOBBY && (
           <div className="space-y-4 animate-in fade-in duration-500 w-full py-4">
-            {/* Seletor de Modo de Jogo */}
             <div className="bg-white/10 backdrop-blur-md rounded-[2rem] p-1 border border-white/20 flex shadow-inner">
               <button 
                 onClick={() => setGameMode(GameMode.IMPOSTOR)}
@@ -212,7 +207,7 @@ const App: React.FC = () => {
                 <Users className="text-yellow-400" size={20} /> Amiguinhos ({players.length}/10)
               </h2>
               
-              <div className="space-y-2 max-h-[35vh] overflow-y-auto no-scrollbar pr-1">
+              <div className="space-y-2 max-h-[30vh] overflow-y-auto no-scrollbar pr-1">
                 {players.map(player => (
                   <div key={player.id} className="flex items-center justify-between bg-white/10 p-2 rounded-2xl border border-white/5 transition-all group">
                     <div className="flex items-center gap-3 flex-1">
@@ -296,6 +291,20 @@ const App: React.FC = () => {
           </div>
         )}
 
+        {phase === GamePhase.CATEGORY_SELECTION && (
+          <div className="space-y-4 animate-in zoom-in-95 duration-300 w-full flex flex-col h-full overflow-hidden">
+            <h2 className="text-2xl font-black text-center text-white drop-shadow-lg shrink-0">Escolha o Tema!</h2>
+            <div className="grid grid-cols-2 gap-3 pb-6 overflow-y-auto no-scrollbar pr-1 flex-1">
+              {CATEGORIES.map(cat => (
+                <button key={cat.id} onClick={() => setupWords(cat.name)} className="bg-white/10 backdrop-blur-md p-4 rounded-[1.5rem] border-2 border-white/20 text-center transition-all hover:scale-105 active:scale-95 shadow-xl flex flex-col items-center justify-center min-h-[110px]">
+                  <div className="text-4xl mb-2 filter drop-shadow-lg">{cat.icon}</div>
+                  <div className="font-black text-sm text-white leading-tight">{cat.name}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {showAvatarPicker && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-red-950/80 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="bg-orange-500 rounded-[2.5rem] w-full max-w-sm border-4 border-yellow-400 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
@@ -317,20 +326,6 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {phase === GamePhase.CATEGORY_SELECTION && (
-          <div className="space-y-4 animate-in zoom-in-95 duration-300 w-full no-scrollbar">
-            <h2 className="text-2xl font-black text-center text-white drop-shadow-lg">Escolha o Tema!</h2>
-            <div className="grid grid-cols-2 gap-3 pb-4">
-              {CATEGORIES.map(cat => (
-                <button key={cat.id} onClick={() => setupWords(cat.name)} className="bg-white/10 backdrop-blur-md p-4 rounded-[1.5rem] border-2 border-white/20 text-center transition-all hover:scale-105 active:scale-95 shadow-xl">
-                  <div className="text-4xl mb-2 filter drop-shadow-lg">{cat.icon}</div>
-                  <div className="font-black text-base text-white">{cat.name}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         {phase === GamePhase.WORD_DISTRIBUTION && (
           <div className="flex flex-col items-center justify-center h-full space-y-8 py-2 animate-in slide-in-from-bottom-10 duration-500 w-full">
             <div className="text-center">
@@ -345,7 +340,6 @@ const App: React.FC = () => {
                     {settings.mode === GameMode.IMPOSTOR ? "Guarde Segredo! 🤫" : "Memorize sua Palavra! 🧠"}
                   </p>
                   
-                  {/* No modo SPY, não dizemos o papel, apenas a palavra */}
                   {settings.mode === GameMode.IMPOSTOR && players[distributionIndex].role === PlayerRole.IMPOSTOR && (
                     <p className="text-sm font-black text-red-600 mb-1 uppercase">VOCÊ É O IMPOSTOR!</p>
                   )}
