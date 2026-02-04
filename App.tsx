@@ -156,14 +156,14 @@ const App: React.FC = () => {
         )}
       </header>
 
-      <main className="flex-1 p-4 overflow-y-auto overscroll-contain pb-10">
+      <main className="flex-1 p-4 overflow-y-auto overscroll-contain flex flex-col justify-center">
         {phase === GamePhase.LOBBY && (
-          <div className="space-y-4 animate-in fade-in duration-500">
+          <div className="space-y-4 animate-in fade-in duration-500 w-full py-4">
             <div className="bg-orange-500/20 backdrop-blur-lg rounded-[2rem] p-5 border border-white/20 shadow-2xl">
               <h2 className="text-lg font-bold mb-3 flex items-center gap-2 text-yellow-300">
                 <Users className="text-yellow-400" size={20} /> Amiguinhos ({players.length}/10)
               </h2>
-              <div className="space-y-2 max-h-[30vh] overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-[25vh] overflow-y-auto pr-1">
                 {players.map(player => (
                   <div key={player.id} className="flex items-center justify-between bg-red-600/20 p-3 rounded-2xl border border-white/10 transition-all">
                     <div className="flex items-center gap-3">
@@ -236,7 +236,7 @@ const App: React.FC = () => {
         )}
 
         {phase === GamePhase.CATEGORY_SELECTION && (
-          <div className="space-y-4 animate-in zoom-in-95 duration-300">
+          <div className="space-y-4 animate-in zoom-in-95 duration-300 w-full">
             <h2 className="text-2xl font-black text-center text-white drop-shadow-lg">Escolha o Tema!</h2>
             <div className="grid grid-cols-2 gap-3">
               {CATEGORIES.map(cat => (
@@ -254,7 +254,7 @@ const App: React.FC = () => {
         )}
 
         {phase === GamePhase.WORD_DISTRIBUTION && (
-          <div className="flex flex-col items-center justify-center h-full space-y-8 py-2 animate-in slide-in-from-bottom-10 duration-500">
+          <div className="flex flex-col items-center justify-center h-full space-y-8 py-2 animate-in slide-in-from-bottom-10 duration-500 w-full">
             <div className="text-center">
               <span className="text-7xl mb-2 block filter drop-shadow-2xl animate-bounce">{players[distributionIndex].avatar}</span>
               <h2 className="text-3xl font-black text-white drop-shadow-md">{players[distributionIndex].name}</h2>
@@ -290,7 +290,7 @@ const App: React.FC = () => {
         )}
 
         {phase === GamePhase.DISCUSSION && (
-          <div className="space-y-6 py-2 animate-in fade-in duration-500">
+          <div className="space-y-6 py-2 animate-in fade-in duration-500 w-full">
             <div className="text-center space-y-2">
               <div className="w-16 h-16 bg-yellow-400 rounded-full flex items-center justify-center mx-auto shadow-xl">
                 <MessageSquare className="text-red-700" size={32} />
@@ -316,7 +316,7 @@ const App: React.FC = () => {
         )}
 
         {phase === GamePhase.VOTING && (
-          <div className="space-y-4 animate-in slide-in-from-right-10 duration-300">
+          <div className="space-y-4 animate-in slide-in-from-right-10 duration-300 w-full">
             <h2 className="text-2xl font-black text-center text-white">Escolha o Suspeito!</h2>
             <div className="grid grid-cols-2 gap-3">
               {players.filter(p => !p.isEliminated).map(p => (
@@ -334,7 +334,7 @@ const App: React.FC = () => {
         )}
 
         {phase === GamePhase.REVEAL && (
-          <div className="flex flex-col items-center justify-center space-y-6 py-2 animate-in zoom-in-50 duration-500">
+          <div className="flex flex-col items-center justify-center space-y-6 py-2 animate-in zoom-in-50 duration-500 w-full">
             <div className="text-center">
               <Trophy size={80} className="text-yellow-400 mx-auto mb-2 filter drop-shadow-[0_0_20px_rgba(255,215,0,0.5)] animate-pulse" />
               <h2 className="text-base uppercase text-yellow-300 font-black tracking-widest italic">Uhul! Vitória dos</h2>
@@ -362,10 +362,6 @@ const App: React.FC = () => {
           </div>
         )}
       </main>
-
-      <footer className="p-3 text-center text-white/30 text-[9px] font-black uppercase tracking-tighter shrink-0 bg-red-950/20 backdrop-blur-sm">
-        Dedução Social Kids • v1.1.2 🚀
-      </footer>
 
       {isLoading && (
         <div className="absolute inset-0 bg-red-950/95 z-50 flex flex-col items-center justify-center p-8 animate-in fade-in duration-300">
