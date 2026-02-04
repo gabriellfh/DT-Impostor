@@ -23,6 +23,28 @@ import {
   ChevronLeft
 } from 'lucide-react';
 
+const SamuraiIcon = ({ className = "w-12 h-12" }: { className?: string }) => (
+  <svg viewBox="0 0 100 100" className={`${className} drop-shadow-md`}>
+    {/* Body - Túnica Branca estilo Jujutsu/Roblox */}
+    <rect x="25" y="55" width="50" height="35" rx="12" fill="white" />
+    <path d="M50 55 L50 90" stroke="#1a1a1a" strokeWidth="1" />
+    {/* Calça Preta */}
+    <rect x="25" y="80" width="50" height="15" rx="5" fill="#1a1a1a" />
+    {/* Head - Chibi/Boneco */}
+    <circle cx="50" cy="35" r="30" fill="#ffe0bd" />
+    {/* Cabelo Preto Espetado */}
+    <path d="M20 35 Q15 5 50 5 Q85 5 80 35 L75 25 Q50 10 25 25 Z" fill="#1a1a1a" />
+    {/* Detalhe do Olho / Bandagem (estilo Yuta) */}
+    <rect x="30" y="32" width="40" height="6" rx="2" fill="white" opacity="0.9" transform="rotate(-5 50 35)" />
+    {/* Olhos Pretos Redondos */}
+    <circle cx="42" cy="40" r="4" fill="#1a1a1a" />
+    <circle cx="62" cy="40" r="4" fill="#1a1a1a" opacity="0.4" />
+    {/* Detalhes da Roupa (Botões) */}
+    <circle cx="65" cy="65" r="2.5" fill="#1a1a1a" />
+    <circle cx="65" cy="75" r="2.5" fill="#1a1a1a" />
+  </svg>
+);
+
 const App: React.FC = () => {
   const [phase, setPhase] = useState<GamePhase>(GamePhase.LOBBY);
   const [players, setPlayers] = useState<Player[]>([]);
@@ -44,9 +66,9 @@ const App: React.FC = () => {
 
   useEffect(() => {
     setPlayers([
-      { id: '1', name: 'Jogador 1', role: PlayerRole.CITIZEN, word: '', isEliminated: false, avatar: AVATARS[0] },
-      { id: '2', name: 'Jogador 2', role: PlayerRole.CITIZEN, word: '', isEliminated: false, avatar: AVATARS[1] },
-      { id: '3', name: 'Jogador 3', role: PlayerRole.CITIZEN, word: '', isEliminated: false, avatar: AVATARS[2] }
+      { id: '1', name: 'GabrielH', role: PlayerRole.CITIZEN, word: '', isEliminated: false, avatar: AVATARS[0] },
+      { id: '2', name: 'Amigo 1', role: PlayerRole.CITIZEN, word: '', isEliminated: false, avatar: AVATARS[1] },
+      { id: '3', name: 'Amigo 2', role: PlayerRole.CITIZEN, word: '', isEliminated: false, avatar: AVATARS[2] }
     ]);
   }, []);
 
@@ -194,11 +216,11 @@ const App: React.FC = () => {
     <div className="h-screen h-[100dvh] max-h-screen max-w-md mx-auto flex flex-col overflow-hidden relative">
       <header className="p-4 relative flex items-center justify-center z-10 shrink-0">
         <div className="flex items-center gap-3">
-          <Star className="text-yellow-400 fill-yellow-400" size={20} />
+          <SamuraiIcon className="w-8 h-8" />
           <h1 className="text-3xl font-black text-white drop-shadow-lg tracking-tighter uppercase">
             IMPOSTOR
           </h1>
-          <Star className="text-yellow-400 fill-yellow-400" size={20} />
+          <SamuraiIcon className="w-8 h-8 scale-x-[-1]" />
         </div>
         {phase !== GamePhase.LOBBY && (
           <button onClick={resetGame} className="absolute right-4 bg-white/20 p-2 rounded-full hover:bg-white/30 transition-colors">
@@ -210,6 +232,13 @@ const App: React.FC = () => {
       <main className="flex-1 p-4 overflow-y-auto no-scrollbar overscroll-contain flex flex-col justify-center">
         {phase === GamePhase.LOBBY && (
           <div className="space-y-4 animate-in fade-in duration-500 w-full py-4">
+            <div className="flex flex-col items-center mb-2">
+              <SamuraiIcon className="w-32 h-32 animate-bounce duration-[2000ms]" />
+              <div className="bg-white/10 px-4 py-1 rounded-full border border-white/20 -mt-2">
+                <span className="text-[10px] font-black text-yellow-400 uppercase tracking-widest">GabrielH [ 17 NÍVEL ]</span>
+              </div>
+            </div>
+
             <div className="bg-white/10 backdrop-blur-md rounded-[2rem] p-1 border border-white/20 flex shadow-inner">
               <button 
                 onClick={() => setGameMode(GameMode.IMPOSTOR)}
@@ -318,7 +347,9 @@ const App: React.FC = () => {
             <div className="grid grid-cols-2 gap-3 pb-6 overflow-y-auto no-scrollbar flex-1">
               {MAIN_CATEGORIES.map(cat => (
                 <button key={cat.id} onClick={() => handleCategoryClick(cat)} className="bg-white/10 backdrop-blur-md p-4 rounded-[1.5rem] border-2 border-white/20 text-center transition-all hover:scale-105 active:scale-95 flex flex-col items-center justify-center min-h-[110px]">
-                  <div className="text-4xl mb-2">{cat.icon}</div>
+                  <div className="text-4xl mb-2">
+                    {cat.id === 'anime' ? <SamuraiIcon className="w-12 h-12" /> : cat.icon}
+                  </div>
                   <div className="font-black text-sm text-white">{cat.name}</div>
                 </button>
               ))}
@@ -429,7 +460,7 @@ const App: React.FC = () => {
 
       {isLoading && (
         <div className="absolute inset-0 bg-red-950/95 z-50 flex flex-col items-center justify-center p-8">
-          <div className="w-16 h-16 border-8 border-yellow-400 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <SamuraiIcon className="w-24 h-24 animate-spin mb-4" />
           <p className="font-black text-2xl text-white text-center animate-pulse">PREPARANDO A BAGUNÇA...</p>
         </div>
       )}
