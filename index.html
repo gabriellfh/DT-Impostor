@@ -20,6 +20,26 @@
             height: 100vh;
             height: 100dvh;
         }
+
+        /* Ocultar barra de rolagem para Chrome, Safari e Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Ocultar barra de rolagem para IE, Edge e Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        
+        /* Ocultar globalmente se necessário para garantir o visual limpo */
+        * {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        *::-webkit-scrollbar {
+            display: none;
+        }
     </style>
 <script type="importmap">
 {
