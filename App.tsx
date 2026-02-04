@@ -201,6 +201,16 @@ const App: React.FC = () => {
     setWinner(null);
   };
 
+  const handleBack = () => {
+    if (phase === GamePhase.CATEGORY_SELECTION) {
+      setPhase(GamePhase.LOBBY);
+    } else if (phase === GamePhase.WORD_DISTRIBUTION) {
+      setPhase(GamePhase.CATEGORY_SELECTION);
+    } else {
+      resetGame();
+    }
+  };
+
   const updateImpostorCount = (val: number) => {
     const maxImpostors = Math.max(1, Math.floor(players.length / 2));
     const newCount = Math.min(maxImpostors, Math.max(0, settings.impostorCount + val));
@@ -250,6 +260,11 @@ const App: React.FC = () => {
   return (
     <div className="h-screen h-[100dvh] max-h-screen max-w-md mx-auto flex flex-col overflow-hidden relative">
       <header className="p-2 pt-4 relative flex items-center justify-center z-10 shrink-0">
+        {phase !== GamePhase.LOBBY && (
+          <button onClick={handleBack} className="absolute left-4 bg-white/10 p-2 rounded-full hover:bg-white/30 transition-colors border border-white/10">
+            <ChevronLeft size={20} className="text-white" strokeWidth={3} />
+          </button>
+        )}
         <div className="flex items-center gap-3">
           <ModeIcon className="w-7 h-7" />
           <h1 className="text-2xl font-arcadia text-white drop-shadow-lg">
@@ -257,23 +272,61 @@ const App: React.FC = () => {
           </h1>
           <ModeIcon className="w-7 h-7" />
         </div>
-        {phase !== GamePhase.LOBBY && (
-          <button onClick={resetGame} className="absolute right-4 bg-white/10 p-2 rounded-full hover:bg-white/30 transition-colors border border-white/10">
-            <RotateCcw size={16} className="text-white" />
-          </button>
-        )}
       </header>
 
-      <main className="flex-1 px-4 py-2 overflow-hidden flex flex-col justify-center">
+      <main className="flex-1 px-4 py-1 overflow-hidden flex flex-col">
         {phase === GamePhase.LOBBY && (
-          <div className="h-full flex flex-col justify-center gap-4 animate-in fade-in duration-500 py-4">
-            {/* Lista de Jogadores */}
-            <div className="bg-[#4B0082]/30 backdrop-blur-lg rounded-[2rem] p-4 border border-white/10 shadow-xl flex flex-col max-h-[35vh]">
+          <div className="h-full flex flex-col justify-start gap-3 animate-in fade-in duration-500 py-2 overflow-hidden">
+            {/* Configurações de Modo (Sem a Box de fundo) */}
+            <div className="space-y-2 flex-shrink-0">
+              <div className="bg-[#2F4F4F]/50 backdrop-blur-md rounded-[1.5rem] p-1 border border-white/10 flex shadow-inner">
+                <button 
+                  onClick={() => setGameMode(GameMode.IMPOSTOR)}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-[1.2rem] font-arcadia text-xs transition-all ${settings.mode === GameMode.IMPOSTOR ? 'bg-[#FF1493] text-white shadow-[0_0_10px_rgba(255,20,147,0.4)]' : 'text-white hover:bg-white/5'}`}
+                >
+                  <Ghost size={14} /> IMPOSTOR
+                </button>
+                <button 
+                  onClick={() => setGameMode(GameMode.SPY)}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-[1.2rem] font-arcadia text-xs transition-all ${settings.mode === GameMode.SPY ? 'bg-[#00FFFF] text-[#4B0082] shadow-[0_0_10px_rgba(0,255,255,0.4)]' : 'text-white hover:bg-white/5'}`}
+                >
+                  <Search size={14} /> ESPIÃO
+                </button>
+              </div>
+
+              <div className="bg-white/5 p-3 rounded-[1.5rem] border border-white/5 flex items-center justify-between">
+                <span className="text-sm font-arcadia text-white">
+                   {getImpostorLabel()}
+                </span>
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => updateImpostorCount(-1)} 
+                    className="w-8 h-8 flex items-center justify-center bg-white/10 text-white rounded-full active:scale-90 disabled:opacity-20 transition-all" 
+                    disabled={settings.impostorCount <= 0}
+                  >
+                    <Minus size={16} strokeWidth={4} />
+                  </button>
+                  <div className="bg-[#FF1493] font-arcadia text-white w-8 h-8 flex items-center justify-center rounded-lg text-sm shadow-md">
+                    {settings.impostorCount}
+                  </div>
+                  <button 
+                    onClick={() => updateImpostorCount(1)} 
+                    className="w-8 h-8 flex items-center justify-center bg-white/10 text-white rounded-full active:scale-90 disabled:opacity-20 transition-all" 
+                    disabled={settings.impostorCount >= Math.floor(players.length / 2)}
+                  >
+                    <Plus size={16} strokeWidth={4} />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Lista de Jogadores (Centralizada) */}
+            <div className="bg-[#4B0082]/30 backdrop-blur-lg rounded-[2rem] p-4 border border-white/10 shadow-xl flex flex-col flex-grow min-h-0 overflow-hidden">
               <h2 className="text-sm font-bold mb-2 flex items-center gap-2 text-[#00FFFF]">
                 <Users className="text-[#00FFFF]" size={16} /> Amiguinhos ({players.length}/10)
               </h2>
               
-              <div className="space-y-1 overflow-y-auto no-scrollbar pr-1">
+              <div className="space-y-1 overflow-y-auto no-scrollbar pr-1 flex-grow min-h-0">
                 {players.map(player => (
                   <div key={player.id} className="flex items-center justify-between bg-white/5 p-1.5 rounded-xl border border-white/5 transition-all group hover:bg-white/10">
                     <div className="flex items-center gap-2 flex-1">
@@ -321,50 +374,7 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {/* Configurações de Modo */}
-            <div className="bg-[#4B0082]/30 backdrop-blur-lg rounded-[2rem] p-4 border border-white/10 shadow-xl space-y-3 flex-shrink-0">
-              <div className="bg-[#2F4F4F]/50 backdrop-blur-md rounded-[1.5rem] p-1 border border-white/10 flex shadow-inner">
-                <button 
-                  onClick={() => setGameMode(GameMode.IMPOSTOR)}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-[1.2rem] font-arcadia text-xs transition-all ${settings.mode === GameMode.IMPOSTOR ? 'bg-[#FF1493] text-white shadow-[0_0_10px_rgba(255,20,147,0.4)]' : 'text-white hover:bg-white/5'}`}
-                >
-                  <Ghost size={14} /> IMPOSTOR
-                </button>
-                <button 
-                  onClick={() => setGameMode(GameMode.SPY)}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-[1.2rem] font-arcadia text-xs transition-all ${settings.mode === GameMode.SPY ? 'bg-[#00FFFF] text-[#4B0082] shadow-[0_0_10px_rgba(0,255,255,0.4)]' : 'text-white hover:bg-white/5'}`}
-                >
-                  <Search size={14} /> ESPIÃO
-                </button>
-              </div>
-
-              <div className="bg-white/5 p-3 rounded-[1.5rem] border border-white/5 flex items-center justify-between">
-                <span className="text-sm font-arcadia text-white">
-                   {getImpostorLabel()}
-                </span>
-                <div className="flex items-center gap-2">
-                  <button 
-                    onClick={() => updateImpostorCount(-1)} 
-                    className="w-8 h-8 flex items-center justify-center bg-white/10 text-white rounded-full active:scale-90 disabled:opacity-20 transition-all" 
-                    disabled={settings.impostorCount <= 0}
-                  >
-                    <Minus size={16} strokeWidth={4} />
-                  </button>
-                  <div className="bg-[#FF1493] font-arcadia text-white w-8 h-8 flex items-center justify-center rounded-lg text-sm shadow-md">
-                    {settings.impostorCount}
-                  </div>
-                  <button 
-                    onClick={() => updateImpostorCount(1)} 
-                    className="w-8 h-8 flex items-center justify-center bg-white/10 text-white rounded-full active:scale-90 disabled:opacity-20 transition-all" 
-                    disabled={settings.impostorCount >= Math.floor(players.length / 2)}
-                  >
-                    <Plus size={16} strokeWidth={4} />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Botão Jogar */}
+            {/* Botão Jogar (Fixo na Base) */}
             <button onClick={startGame} disabled={players.length < 3} className="w-full bg-gradient-to-r from-[#FF1493] via-[#8A2BE2] to-[#4B0082] py-4 rounded-[1.5rem] font-black text-xl text-white shadow-[0_4px_0_rgba(138,43,226,0.4)] flex items-center justify-center gap-3 active:translate-y-1 active:shadow-none transition-all disabled:opacity-40 shrink-0">
               <Play fill="currentColor" size={24} /> VAMOS JOGAR!
             </button>
