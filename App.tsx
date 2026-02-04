@@ -142,15 +142,19 @@ const App: React.FC = () => {
 
   return (
     <div className="h-screen h-[100dvh] max-h-screen max-w-md mx-auto flex flex-col overflow-hidden relative">
-      <header className="p-4 flex justify-between items-center z-10 shrink-0">
-        <div className="flex items-center gap-2">
+      <header className="p-4 relative flex items-center justify-center z-10 shrink-0">
+        <div className="flex items-center gap-3">
           <Star className="text-yellow-400 fill-yellow-400" size={20} />
-          <h1 className="text-2xl font-extrabold text-white drop-shadow-lg tracking-tighter">
-            IMPOSTOR <span className="text-yellow-400 italic text-xl">KIDS</span>
+          <h1 className="text-3xl font-black text-white drop-shadow-lg tracking-tighter uppercase">
+            IMPOSTOR
           </h1>
+          <Star className="text-yellow-400 fill-yellow-400" size={20} />
         </div>
         {phase !== GamePhase.LOBBY && (
-          <button onClick={resetGame} className="bg-white/20 p-2 rounded-full hover:bg-white/30 transition-colors">
+          <button 
+            onClick={resetGame} 
+            className="absolute right-4 bg-white/20 p-2 rounded-full hover:bg-white/30 transition-colors"
+          >
             <RotateCcw size={18} className="text-white" />
           </button>
         )}
