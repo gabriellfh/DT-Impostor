@@ -8,6 +8,11 @@ export enum GamePhase {
   REVEAL = 'REVEAL'
 }
 
+export enum GameMode {
+  IMPOSTOR = 'IMPOSTOR',
+  SPY = 'SPY'
+}
+
 export enum PlayerRole {
   CITIZEN = 'CITIZEN',
   IMPOSTOR = 'IMPOSTOR',
@@ -27,6 +32,7 @@ export interface GameSettings {
   category: string;
   impostorCount: number;
   undercoverCount: number;
+  mode: GameMode;
 }
 
 export interface WordPair {

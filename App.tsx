@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { GamePhase, Player, PlayerRole, GameSettings, WordPair } from './types.ts';
+import { GamePhase, Player, PlayerRole, GameSettings, WordPair, GameMode } from './types.ts';
 import { CATEGORIES, AVATARS } from './constants.tsx';
 import { generateWordPair } from './services/geminiService.ts';
 import { 
@@ -17,7 +17,10 @@ import {
   RotateCcw,
   Star,
   X,
-  Edit2
+  Edit2,
+  Ghost,
+  Search,
+  UserSecret
 } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -28,7 +31,8 @@ const App: React.FC = () => {
   const [settings, setSettings] = useState<GameSettings>({
     category: 'Comida',
     impostorCount: 1,
-    undercoverCount: 0
+    undercoverCount: 0,
+    mode: GameMode.IMPOSTOR
   });
   const [distributionIndex, setDistributionIndex] = useState(0);
   const [isWordVisible, setIsWordVisible] = useState(false);
@@ -91,18 +95,28 @@ const App: React.FC = () => {
     setIsLoading(true);
     const words = await generateWordPair(category);
     const shuffled = [...players].sort(() => Math.random() - 0.5);
+    
     const updatedPlayers = shuffled.map((p, idx) => {
       let role = PlayerRole.CITIZEN;
       let word = words.citizenWord;
-      if (idx === 0) {
-        role = PlayerRole.IMPOSTOR;
-        word = 'Você é o IMPOSTOR! (Tente descobrir a palavra)';
-      } else if (idx > 0 && idx <= settings.undercoverCount) {
-        role = PlayerRole.UNDERCOVER;
-        word = words.undercoverWord;
+      
+      if (settings.mode === GameMode.IMPOSTOR) {
+        if (idx < settings.impostorCount) {
+          role = PlayerRole.IMPOSTOR;
+          word = 'Você é o IMPOSTOR! (Tente descobrir a palavra)';
+        }
+      } else {
+        // No modo ESPIÃO, o espião recebe a undercoverWord
+        // A contagem de impostores aqui dita quantos espiões existem
+        if (idx < settings.impostorCount) {
+          role = PlayerRole.UNDERCOVER; // Usamos UNDERCOVER internamente para o espião
+          word = words.undercoverWord;
+        }
       }
+      
       return { ...p, role, word, isEliminated: false };
     });
+
     setPlayers(updatedPlayers);
     setDistributionIndex(0);
     setIsWordVisible(false);
@@ -122,20 +136,21 @@ const App: React.FC = () => {
   const handleVote = (id: string) => {
     const votedPlayer = players.find(p => p.id === id);
     if (!votedPlayer) return;
+    
     const newPlayers = players.map(p => p.id === id ? { ...p, isEliminated: true } : p);
     setPlayers(newPlayers);
-    if (votedPlayer.role === PlayerRole.IMPOSTOR) {
+
+    const activeBadGuys = newPlayers.filter(p => !p.isEliminated && (p.role === PlayerRole.IMPOSTOR || p.role === PlayerRole.UNDERCOVER)).length;
+    const activeCivilians = newPlayers.filter(p => !p.isEliminated && p.role === PlayerRole.CITIZEN).length;
+
+    if (activeBadGuys === 0) {
       setWinner('CIDADÃOS');
       setPhase(GamePhase.REVEAL);
+    } else if (activeBadGuys >= activeCivilians) {
+      setWinner(settings.mode === GameMode.IMPOSTOR ? 'IMPOSTOR' : 'ESPIÃO');
+      setPhase(GamePhase.REVEAL);
     } else {
-      const activeImpostors = newPlayers.filter(p => !p.isEliminated && (p.role === PlayerRole.IMPOSTOR || p.role === PlayerRole.UNDERCOVER)).length;
-      const activeCivilians = newPlayers.filter(p => !p.isEliminated && p.role === PlayerRole.CITIZEN).length;
-      if (activeImpostors >= activeCivilians) {
-        setWinner('IMPOSTOR');
-        setPhase(GamePhase.REVEAL);
-      } else {
-        setPhase(GamePhase.DISCUSSION);
-      }
+      setPhase(GamePhase.DISCUSSION);
     }
   };
 
@@ -145,9 +160,15 @@ const App: React.FC = () => {
     setWinner(null);
   };
 
-  const updateUndercoverCount = (val: number) => {
-    const newCount = Math.min(5, Math.max(0, settings.undercoverCount + val));
-    setSettings({ ...settings, undercoverCount: newCount });
+  const updateImpostorCount = (val: number) => {
+    const newCount = Math.min(5, Math.max(0, settings.impostorCount + val));
+    setSettings({ ...settings, impostorCount: newCount });
+  };
+
+  const setGameMode = (mode: GameMode) => {
+    // Garantir que temos ao menos 1 impostor ao mudar de modo se estava em 0, 
+    // ou manter a preferência do usuário
+    setSettings({ ...settings, mode });
   };
 
   return (
@@ -170,12 +191,28 @@ const App: React.FC = () => {
       <main className="flex-1 p-4 overflow-y-auto no-scrollbar overscroll-contain flex flex-col justify-center">
         {phase === GamePhase.LOBBY && (
           <div className="space-y-4 animate-in fade-in duration-500 w-full py-4">
+            {/* Seletor de Modo de Jogo */}
+            <div className="bg-white/10 backdrop-blur-md rounded-[2rem] p-1 border border-white/20 flex shadow-inner">
+              <button 
+                onClick={() => setGameMode(GameMode.IMPOSTOR)}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-[1.8rem] font-black transition-all ${settings.mode === GameMode.IMPOSTOR ? 'bg-yellow-400 text-red-800 shadow-lg' : 'text-white hover:bg-white/5'}`}
+              >
+                <Ghost size={20} /> IMPOSTOR
+              </button>
+              <button 
+                onClick={() => setGameMode(GameMode.SPY)}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-[1.8rem] font-black transition-all ${settings.mode === GameMode.SPY ? 'bg-yellow-400 text-red-800 shadow-lg' : 'text-white hover:bg-white/5'}`}
+              >
+                <Search size={20} /> ESPIÃO
+              </button>
+            </div>
+
             <div className="bg-orange-500/20 backdrop-blur-lg rounded-[2rem] p-5 border border-white/20 shadow-2xl flex flex-col">
               <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-yellow-300">
                 <Users className="text-yellow-400" size={20} /> Amiguinhos ({players.length}/10)
               </h2>
               
-              <div className="space-y-2 max-h-[40vh] overflow-y-auto no-scrollbar pr-1">
+              <div className="space-y-2 max-h-[35vh] overflow-y-auto no-scrollbar pr-1">
                 {players.map(player => (
                   <div key={player.id} className="flex items-center justify-between bg-white/10 p-2 rounded-2xl border border-white/5 transition-all group">
                     <div className="flex items-center gap-3 flex-1">
@@ -232,17 +269,21 @@ const App: React.FC = () => {
               <div className="flex items-center justify-between bg-orange-700/40 p-4 rounded-[1.5rem] border-2 border-orange-400/30">
                 <div className="flex-1 mr-4">
                   <span className="text-lg font-black text-white italic">
-                    {settings.undercoverCount > 0 ? "Impostores" : "Impostor"}
+                    {settings.impostorCount === 0 
+                      ? (settings.mode === GameMode.IMPOSTOR ? "Sem Impostor" : "Sem Espiões")
+                      : settings.impostorCount === 1 
+                        ? (settings.mode === GameMode.IMPOSTOR ? "Impostor" : "Espião") 
+                        : (settings.mode === GameMode.IMPOSTOR ? "Impostores" : "Espiões")}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <button onClick={() => updateUndercoverCount(-1)} className="w-10 h-10 flex items-center justify-center bg-white/10 text-white rounded-full active:scale-90 disabled:opacity-30" disabled={settings.undercoverCount === 0}>
+                  <button onClick={() => updateImpostorCount(-1)} className="w-10 h-10 flex items-center justify-center bg-white/10 text-white rounded-full active:scale-90 disabled:opacity-30" disabled={settings.impostorCount === 0}>
                     <Minus size={20} strokeWidth={4} />
                   </button>
                   <div className="bg-yellow-400 text-red-700 font-black w-10 h-10 flex items-center justify-center rounded-xl text-xl shadow-lg">
-                    {settings.undercoverCount + 1}
+                    {settings.impostorCount}
                   </div>
-                  <button onClick={() => updateUndercoverCount(1)} className="w-10 h-10 flex items-center justify-center bg-white/10 text-white rounded-full active:scale-90 disabled:opacity-30" disabled={settings.undercoverCount >= 5}>
+                  <button onClick={() => updateImpostorCount(1)} className="w-10 h-10 flex items-center justify-center bg-white/10 text-white rounded-full active:scale-90 disabled:opacity-30" disabled={settings.impostorCount >= 5}>
                     <Plus size={20} strokeWidth={4} />
                   </button>
                 </div>
@@ -300,8 +341,26 @@ const App: React.FC = () => {
             <button onClick={() => setIsWordVisible(!isWordVisible)} className={`w-full max-w-[240px] aspect-square rounded-[2.5rem] border-8 border-dashed flex flex-col items-center justify-center transition-all duration-500 ${isWordVisible ? 'bg-white border-yellow-400 rotate-0 scale-105 shadow-2xl' : 'bg-red-900/40 border-white/20 rotate-3'}`}>
               {isWordVisible ? (
                 <div className="text-center p-4 animate-in zoom-in duration-300">
-                  <p className="text-xs text-red-600 uppercase font-black mb-2">Guarde Segredo! 🤫</p>
-                  <p className="text-3xl font-black text-red-800 leading-tight">{players[distributionIndex].word}</p>
+                  <p className="text-xs text-red-600 uppercase font-black mb-2">
+                    {settings.mode === GameMode.IMPOSTOR ? "Guarde Segredo! 🤫" : "Memorize sua Palavra! 🧠"}
+                  </p>
+                  
+                  {/* No modo SPY, não dizemos o papel, apenas a palavra */}
+                  {settings.mode === GameMode.IMPOSTOR && players[distributionIndex].role === PlayerRole.IMPOSTOR && (
+                    <p className="text-sm font-black text-red-600 mb-1 uppercase">VOCÊ É O IMPOSTOR!</p>
+                  )}
+                  {settings.mode === GameMode.IMPOSTOR && players[distributionIndex].role === PlayerRole.CITIZEN && (
+                    <p className="text-sm font-black text-green-600 mb-1 uppercase">VOCÊ É CIDADÃO</p>
+                  )}
+                  
+                  <p className="text-3xl font-black text-red-800 leading-tight">
+                    {players[distributionIndex].word.includes('IMPOSTOR!') ? '?' : players[distributionIndex].word}
+                  </p>
+                  
+                  {players[distributionIndex].role === PlayerRole.IMPOSTOR && (
+                    <p className="text-[10px] text-red-400 mt-2 font-bold uppercase italic">Descubra a palavra dos outros!</p>
+                  )}
+                  
                   <EyeOff className="mt-6 text-red-300 mx-auto" size={32} />
                 </div>
               ) : (
@@ -319,19 +378,23 @@ const App: React.FC = () => {
           <div className="space-y-6 py-2 animate-in fade-in duration-500 w-full text-center">
             <div className="w-16 h-16 bg-yellow-400 rounded-full flex items-center justify-center mx-auto shadow-xl"><MessageSquare className="text-red-700" size={32} /></div>
             <h2 className="text-2xl font-black text-white">Hora de Falar!</h2>
-            <p className="text-yellow-200 font-bold text-sm">Conte algo sobre sua palavra sem dizer o nome!</p>
+            <p className="text-yellow-200 font-bold text-sm">
+              {settings.mode === GameMode.IMPOSTOR ? "Descreva sua palavra sem dizer o nome!" : "Cuidado! Alguém tem uma palavra diferente..."}
+            </p>
             <div className="grid grid-cols-2 gap-2 max-h-[40vh] overflow-y-auto no-scrollbar">
               {players.filter(p => !p.isEliminated).map(p => (
                 <div key={p.id} className="bg-red-600/20 p-3 rounded-2xl border border-white/10 text-center"><span className="text-4xl block mb-1">{p.avatar}</span><span className="font-black text-white text-xs">{p.name}</span></div>
               ))}
             </div>
-            <button onClick={() => setPhase(GamePhase.VOTING)} className="w-full bg-gradient-to-r from-orange-400 to-red-600 py-4 rounded-[2rem] font-black text-lg text-white shadow-lg">QUEM É O IMPOSTOR? 🤔</button>
+            <button onClick={() => setPhase(GamePhase.VOTING)} className="w-full bg-gradient-to-r from-orange-400 to-red-600 py-4 rounded-[2rem] font-black text-lg text-white shadow-lg uppercase">
+              Descobrir o {settings.mode === GameMode.IMPOSTOR ? 'Impostor' : 'Espião'} 🤔
+            </button>
           </div>
         )}
 
         {phase === GamePhase.VOTING && (
           <div className="space-y-4 animate-in slide-in-from-right-10 duration-300 w-full no-scrollbar">
-            <h2 className="text-2xl font-black text-center text-white">Escolha o Suspeito!</h2>
+            <h2 className="text-2xl font-black text-center text-white uppercase tracking-tighter">Quem é o {settings.mode === GameMode.IMPOSTOR ? 'Impostor' : 'Espião'}?</h2>
             <div className="grid grid-cols-2 gap-3 pb-4">
               {players.filter(p => !p.isEliminated).map(p => (
                 <button key={p.id} onClick={() => handleVote(p.id)} className="bg-white/10 p-4 rounded-[1.5rem] border-2 border-white/10 flex flex-col items-center hover:bg-yellow-500/20 transition-all">
@@ -350,11 +413,13 @@ const App: React.FC = () => {
             <h3 className="text-4xl font-black text-white drop-shadow-lg leading-tight">{winner}</h3>
             <div className="w-full space-y-2 max-h-[30vh] overflow-y-auto no-scrollbar">
               {players.map(p => (
-                <div key={p.id} className={`flex items-center justify-between p-3 rounded-2xl border-2 ${p.role === PlayerRole.IMPOSTOR ? 'bg-red-500/30 border-red-500' : p.role === PlayerRole.UNDERCOVER ? 'bg-orange-500/30 border-orange-500' : 'bg-white/10 border-white/20'}`}>
+                <div key={p.id} className={`flex items-center justify-between p-3 rounded-2xl border-2 ${p.role !== PlayerRole.CITIZEN ? 'bg-red-500/30 border-red-500' : 'bg-white/10 border-white/20'}`}>
                   <div className="flex items-center gap-3"><span className="text-2xl">{p.avatar}</span><span className="font-black text-white text-base">{p.name}</span></div>
                   <div className="text-right">
-                    <span className={`text-[8px] uppercase font-black px-2 py-1 rounded-full ${p.role === PlayerRole.IMPOSTOR ? 'bg-red-500 text-white' : p.role === PlayerRole.UNDERCOVER ? 'bg-orange-500 text-white' : 'bg-white/30 text-white'}`}>{p.role}</span>
-                    <p className="text-xs font-bold text-white/60 mt-0.5">{p.word.split('!')[0]}</p>
+                    <span className={`text-[8px] uppercase font-black px-2 py-1 rounded-full ${p.role === PlayerRole.IMPOSTOR ? 'bg-red-500 text-white' : p.role === PlayerRole.UNDERCOVER ? 'bg-orange-500 text-white' : 'bg-white/30 text-white'}`}>
+                      {p.role === PlayerRole.CITIZEN ? 'CIDADÃO' : settings.mode === GameMode.IMPOSTOR ? 'IMPOSTOR' : 'ESPIÃO'}
+                    </span>
+                    <p className="text-xs font-bold text-white/60 mt-0.5">{p.word.includes('IMPOSTOR!') ? 'IMPOSTOR' : p.word}</p>
                   </div>
                 </div>
               ))}
