@@ -25,23 +25,49 @@ import {
 
 const SamuraiIcon = ({ className = "w-12 h-12" }: { className?: string }) => (
   <svg viewBox="0 0 100 100" className={`${className} drop-shadow-md`}>
-    {/* Body - Túnica Branca estilo Jujutsu/Roblox */}
-    <rect x="25" y="55" width="50" height="35" rx="12" fill="white" />
-    <path d="M50 55 L50 90" stroke="#1a1a1a" strokeWidth="1" />
+    {/* Body - Túnica Branca estilo Jujutsu/Roblox - Proporção Chibi (Corpo Pequeno) */}
+    <rect x="35" y="65" width="30" height="25" rx="8" fill="white" />
+    <path d="M50 65 L50 90" stroke="#1a1a1a" strokeWidth="1" />
     {/* Calça Preta */}
-    <rect x="25" y="80" width="50" height="15" rx="5" fill="#1a1a1a" />
-    {/* Head - Chibi/Boneco */}
-    <circle cx="50" cy="35" r="30" fill="#ffe0bd" />
+    <rect x="35" y="82" width="30" height="10" rx="3" fill="#1a1a1a" />
+    {/* Head - Chibi/Boneco (Cabeça Grande) */}
+    <circle cx="50" cy="40" r="35" fill="#ffe0bd" />
     {/* Cabelo Preto Espetado */}
-    <path d="M20 35 Q15 5 50 5 Q85 5 80 35 L75 25 Q50 10 25 25 Z" fill="#1a1a1a" />
+    <path d="M15 40 Q10 5 50 5 Q90 5 85 40 L80 30 Q50 15 20 30 Z" fill="#1a1a1a" />
     {/* Detalhe do Olho / Bandagem (estilo Yuta) */}
-    <rect x="30" y="32" width="40" height="6" rx="2" fill="white" opacity="0.9" transform="rotate(-5 50 35)" />
-    {/* Olhos Pretos Redondos */}
-    <circle cx="42" cy="40" r="4" fill="#1a1a1a" />
-    <circle cx="62" cy="40" r="4" fill="#1a1a1a" opacity="0.4" />
+    <rect x="25" y="38" width="50" height="8" rx="2" fill="white" opacity="0.9" transform="rotate(-5 50 40)" />
+    {/* Olhos Pretos Redondos Grandes (Estilo Boneco) */}
+    <circle cx="40" cy="48" r="5" fill="#1a1a1a" />
+    <circle cx="65" cy="48" r="5" fill="#1a1a1a" opacity="0.4" />
     {/* Detalhes da Roupa (Botões) */}
-    <circle cx="65" cy="65" r="2.5" fill="#1a1a1a" />
-    <circle cx="65" cy="75" r="2.5" fill="#1a1a1a" />
+    <circle cx="60" cy="72" r="2" fill="#1a1a1a" />
+    <circle cx="60" cy="78" r="2" fill="#1a1a1a" />
+  </svg>
+);
+
+const CountryIcon = ({ className = "w-12 h-12" }: { className?: string }) => (
+  <svg viewBox="0 0 100 100" className={`${className} drop-shadow-md`}>
+    {/* Flag 1: Brazil (Back) */}
+    <g transform="translate(10, 10) scale(0.75)">
+      <rect x="0" y="5" width="5" height="70" fill="#a1a1a1" rx="2" /> {/* Pole */}
+      <path d="M5 5 Q25 0 45 10 Q65 20 85 10 L85 50 Q65 60 45 50 Q25 40 5 50 Z" fill="#009c3b" /> {/* Wave Shape */}
+      <path d="M15 27.5 L45 12.5 L75 27.5 L45 42.5 Z" fill="#ffdf00" />
+      <circle cx="45" cy="27.5" r="8" fill="#002776" />
+    </g>
+    
+    {/* Flag 2: Portugal (Front) */}
+    <g transform="translate(35, 25) scale(0.75)">
+      <rect x="0" y="5" width="5" height="70" fill="#666" rx="2" /> {/* Pole */}
+      <mask id="flagMask">
+        <path d="M5 5 Q25 0 45 10 Q65 20 85 10 L85 50 Q65 60 45 50 Q25 40 5 50 Z" fill="white" />
+      </mask>
+      <g mask="url(#flagMask)">
+          <rect x="5" y="0" width="30" height="70" fill="#006600" />
+          <rect x="35" y="0" width="60" height="70" fill="#ff0000" />
+          <circle cx="35" cy="27.5" r="7" fill="#ffdf00" />
+          <rect x="32" y="24.5" width="6" height="6" fill="#ffffff" stroke="#ff0000" strokeWidth="1" />
+      </g>
+    </g>
   </svg>
 );
 
@@ -212,15 +238,28 @@ const App: React.FC = () => {
     }
   };
 
+  const renderCategoryIcon = (id: string, icon: string) => {
+    if (id === 'anime') return <SamuraiIcon className="w-14 h-14" />;
+    if (id === 'countries') return <CountryIcon className="w-14 h-14" />;
+    return <div className="text-4xl">{icon}</div>;
+  };
+
+  const ModeIcon = ({ className = "w-10 h-10" }: { className?: string }) => {
+    if (settings.mode === GameMode.IMPOSTOR) {
+      return <Ghost className={`${className} text-white drop-shadow-lg`} strokeWidth={3} />;
+    }
+    return <Search className={`${className} text-white drop-shadow-lg`} strokeWidth={4} />;
+  };
+
   return (
     <div className="h-screen h-[100dvh] max-h-screen max-w-md mx-auto flex flex-col overflow-hidden relative">
       <header className="p-4 relative flex items-center justify-center z-10 shrink-0">
         <div className="flex items-center gap-3">
-          <SamuraiIcon className="w-8 h-8" />
+          <ModeIcon className="w-10 h-10" />
           <h1 className="text-3xl font-black text-white drop-shadow-lg tracking-tighter uppercase">
-            IMPOSTOR
+            {settings.mode === GameMode.IMPOSTOR ? 'IMPOSTOR' : 'ESPIÃO'}
           </h1>
-          <SamuraiIcon className="w-8 h-8 scale-x-[-1]" />
+          <ModeIcon className="w-10 h-10" />
         </div>
         {phase !== GamePhase.LOBBY && (
           <button onClick={resetGame} className="absolute right-4 bg-white/20 p-2 rounded-full hover:bg-white/30 transition-colors">
@@ -233,8 +272,13 @@ const App: React.FC = () => {
         {phase === GamePhase.LOBBY && (
           <div className="space-y-4 animate-in fade-in duration-500 w-full py-4">
             <div className="flex flex-col items-center mb-2">
-              <SamuraiIcon className="w-32 h-32 animate-bounce duration-[2000ms]" />
-              <div className="bg-white/10 px-4 py-1 rounded-full border border-white/20 -mt-2">
+              <div className="relative">
+                <div className="absolute inset-0 blur-2xl bg-yellow-400/20 rounded-full scale-150 animate-pulse" />
+                <div className="bg-white/10 p-10 rounded-[3rem] border-4 border-white/20 shadow-2xl animate-bounce duration-[3000ms] relative">
+                   <ModeIcon className="w-24 h-24" />
+                </div>
+              </div>
+              <div className="bg-white/10 px-4 py-1 rounded-full border border-white/20 mt-6">
                 <span className="text-[10px] font-black text-yellow-400 uppercase tracking-widest">GabrielH [ 17 NÍVEL ]</span>
               </div>
             </div>
@@ -346,9 +390,9 @@ const App: React.FC = () => {
             <h2 className="text-2xl font-black text-center text-white drop-shadow-lg">Escolha o Tema!</h2>
             <div className="grid grid-cols-2 gap-3 pb-6 overflow-y-auto no-scrollbar flex-1">
               {MAIN_CATEGORIES.map(cat => (
-                <button key={cat.id} onClick={() => handleCategoryClick(cat)} className="bg-white/10 backdrop-blur-md p-4 rounded-[1.5rem] border-2 border-white/20 text-center transition-all hover:scale-105 active:scale-95 flex flex-col items-center justify-center min-h-[110px]">
-                  <div className="text-4xl mb-2">
-                    {cat.id === 'anime' ? <SamuraiIcon className="w-12 h-12" /> : cat.icon}
+                <button key={cat.id} onClick={() => handleCategoryClick(cat)} className="bg-white/10 backdrop-blur-md p-4 rounded-[1.5rem] border-2 border-white/20 text-center transition-all hover:scale-105 active:scale-95 flex flex-col items-center justify-center min-h-[120px]">
+                  <div className="mb-2">
+                    {renderCategoryIcon(cat.id, cat.icon)}
                   </div>
                   <div className="font-black text-sm text-white">{cat.name}</div>
                 </button>
@@ -460,8 +504,10 @@ const App: React.FC = () => {
 
       {isLoading && (
         <div className="absolute inset-0 bg-red-950/95 z-50 flex flex-col items-center justify-center p-8">
-          <SamuraiIcon className="w-24 h-24 animate-spin mb-4" />
-          <p className="font-black text-2xl text-white text-center animate-pulse">PREPARANDO A BAGUNÇA...</p>
+          <ModeIcon className="w-24 h-24 animate-spin mb-4" />
+          <p className="font-black text-2xl text-white text-center animate-pulse uppercase tracking-widest">
+            {settings.mode === GameMode.IMPOSTOR ? 'Infiltrando...' : 'Rastreado...'}
+          </p>
         </div>
       )}
     </div>
