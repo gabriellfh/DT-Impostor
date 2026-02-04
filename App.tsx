@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { GamePhase, Player, PlayerRole, GameSettings, WordPair, GameMode } from './types.ts';
 import { MAIN_CATEGORIES, AVATARS } from './constants.tsx';
@@ -212,7 +211,13 @@ const App: React.FC = () => {
   };
 
   const handleCategoryClick = (cat: any) => {
-    setupWords(cat.name);
+    if (cat.id === 'random') {
+      const validCategories = MAIN_CATEGORIES.filter(c => c.id !== 'random');
+      const randomCat = validCategories[Math.floor(Math.random() * validCategories.length)];
+      setupWords(randomCat.name);
+    } else {
+      setupWords(cat.name);
+    }
   };
 
   const getImpostorLabel = () => {
@@ -246,7 +251,7 @@ const App: React.FC = () => {
       <header className="p-4 relative flex items-center justify-center z-10 shrink-0">
         <div className="flex items-center gap-3">
           <ModeIcon className="w-8 h-8" />
-          <h1 className="text-3xl font-black text-white drop-shadow-lg tracking-tighter uppercase italic">
+          <h1 className="text-3xl font-arcadia text-white drop-shadow-lg">
             {settings.mode === GameMode.IMPOSTOR ? 'IMPOSTOR' : 'ESPIÃO'}
           </h1>
           <ModeIcon className="w-8 h-8" />
@@ -316,7 +321,7 @@ const App: React.FC = () => {
                     placeholder="Novo amigo..."
                     className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-[#00FFFF] text-white placeholder:text-white/20 font-bold"
                   />
-                  <button onClick={addPlayer} className="bg-[#00FFFF] text-[#4B0082] w-12 h-12 rounded-2xl shadow-lg flex items-center justify-center shrink-0 active:scale-95 transition-transform">
+                  <button onClick={addPlayer} className="bg-[#FF1493] text-white w-12 h-12 rounded-2xl shadow-lg flex items-center justify-center shrink-0 active:scale-95 transition-transform">
                     <Plus size={24} strokeWidth={4} />
                   </button>
                 </div>
@@ -327,20 +332,20 @@ const App: React.FC = () => {
               <div className="bg-[#2F4F4F]/50 backdrop-blur-md rounded-[2rem] p-1 border border-white/10 flex shadow-inner">
                 <button 
                   onClick={() => setGameMode(GameMode.IMPOSTOR)}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-[1.8rem] font-black transition-all ${settings.mode === GameMode.IMPOSTOR ? 'bg-[#FF1493] text-white shadow-[0_0_15px_rgba(255,20,147,0.5)]' : 'text-white hover:bg-white/5'}`}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-[1.8rem] font-arcadia transition-all ${settings.mode === GameMode.IMPOSTOR ? 'bg-[#FF1493] text-white shadow-[0_0_15px_rgba(255,20,147,0.5)]' : 'text-white hover:bg-white/5'}`}
                 >
                   <Ghost size={20} /> IMPOSTOR
                 </button>
                 <button 
                   onClick={() => setGameMode(GameMode.SPY)}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-[1.8rem] font-black transition-all ${settings.mode === GameMode.SPY ? 'bg-[#00FFFF] text-[#4B0082] shadow-[0_0_15px_rgba(0,255,255,0.5)]' : 'text-white hover:bg-white/5'}`}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-[1.8rem] font-arcadia transition-all ${settings.mode === GameMode.SPY ? 'bg-[#00FFFF] text-[#4B0082] shadow-[0_0_15px_rgba(0,255,255,0.5)]' : 'text-white hover:bg-white/5'}`}
                 >
                   <Search size={20} /> ESPIÃO
                 </button>
               </div>
 
               <div className="bg-white/5 p-4 rounded-[2rem] border border-white/5 flex items-center justify-between">
-                <span className="text-lg font-black text-white italic">
+                <span className="text-lg font-arcadia text-white">
                    {getImpostorLabel()}
                 </span>
                 <div className="flex items-center gap-3">
@@ -351,7 +356,7 @@ const App: React.FC = () => {
                   >
                     <Minus size={20} strokeWidth={4} />
                   </button>
-                  <div className="bg-[#FF1493] text-white font-black w-10 h-10 flex items-center justify-center rounded-xl text-lg shadow-lg">
+                  <div className="bg-[#FF1493] font-arcadia text-white w-10 h-10 flex items-center justify-center rounded-xl text-lg shadow-lg">
                     {settings.impostorCount}
                   </div>
                   <button 
@@ -418,7 +423,7 @@ const App: React.FC = () => {
               {isWordVisible ? (
                 <div className="text-center p-4">
                   <p className="text-xs text-[#FF1493] uppercase font-black mb-2 italic">Segredo de Estado! 🤫</p>
-                  <p className="text-sm font-black text-[#4B0082] mb-1 uppercase tracking-tight">
+                  <p className="text-sm font-arcadia text-[#4B0082] mb-1">
                     {players[distributionIndex].role === PlayerRole.CITIZEN ? 'VOCÊ É CIDADÃO' : settings.mode === GameMode.IMPOSTOR ? 'VOCÊ É O IMPOSTOR!' : 'VOCÊ É O ESPIÃO!'}
                   </p>
                   <p className="text-3xl font-black text-[#8A2BE2] leading-tight break-words">
@@ -429,7 +434,7 @@ const App: React.FC = () => {
               ) : (
                 <div className="text-center">
                   <Eye size={48} className="text-white/20 mx-auto mb-2" />
-                  <p className="font-black text-white/30 text-lg uppercase tracking-tighter italic">Revelar Palavra</p>
+                  <p className="font-arcadia text-white/30 text-lg">Revelar Palavra</p>
                 </div>
               )}
             </button>
@@ -478,14 +483,14 @@ const App: React.FC = () => {
             </div>
             <div>
                 <h2 className="text-xs uppercase text-[#00FFFF] font-black tracking-widest italic mb-1">Muitas palmas para</h2>
-                <h3 className="text-4xl font-black text-white drop-shadow-lg leading-tight italic uppercase">{winner}</h3>
+                <h3 className="text-4xl font-arcadia text-white drop-shadow-lg">{winner}</h3>
             </div>
             <div className="w-full space-y-2 max-h-[30vh] overflow-y-auto no-scrollbar">
               {players.map(p => (
                 <div key={p.id} className={`flex items-center justify-between p-3 rounded-[1.5rem] border-2 transition-all ${p.role !== PlayerRole.CITIZEN ? 'bg-[#FF1493]/20 border-[#FF1493] shadow-[0_0_10px_rgba(255,20,147,0.2)]' : 'bg-white/5 border-white/5 opacity-80'}`}>
                   <div className="flex items-center gap-3"><span className="text-2xl">{p.avatar}</span><span className="font-black text-white text-sm">{p.name}</span></div>
                   <div className="text-right">
-                    <span className={`text-[8px] uppercase font-black px-2 py-0.5 rounded-full ${p.role !== PlayerRole.CITIZEN ? 'bg-[#FF1493] text-white' : 'bg-white/10 text-white/50'}`}>
+                    <span className={`text-[8px] uppercase font-arcadia px-2 py-0.5 rounded-full ${p.role !== PlayerRole.CITIZEN ? 'bg-[#FF1493] text-white' : 'bg-white/10 text-white/50'}`}>
                       {p.role === PlayerRole.CITIZEN ? 'CIDADÃO' : settings.mode === GameMode.IMPOSTOR ? 'IMPOSTOR' : 'ESPIÃO'}
                     </span>
                     <p className="text-xs font-bold text-[#00FFFF] mt-0.5 italic">{p.word.includes('IMPOSTOR!') ? '?' : p.word}</p>
@@ -504,7 +509,7 @@ const App: React.FC = () => {
               <div className="absolute inset-0 blur-2xl bg-[#00FFFF]/50 animate-pulse rounded-full" />
               <ModeIcon className="w-24 h-24 animate-spin relative" />
           </div>
-          <p className="font-black text-2xl text-white text-center animate-pulse uppercase tracking-[0.2em] italic drop-shadow-md">
+          <p className="font-arcadia text-2xl text-white text-center animate-pulse">
             {settings.mode === GameMode.IMPOSTOR ? 'Criando Caos...' : 'Sincronizando...'}
           </p>
         </div>

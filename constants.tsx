@@ -14,6 +14,28 @@ export const MAIN_CATEGORIES = [
 
 // Dados estruturados para sorteio instantâneo (Zero Latência)
 export const LOCAL_WORD_DATA: Record<string, string[][]> = {
+  'Tecnologia': [
+    ['Telemóvel', 'Smartphone'],
+    ['Tablet', 'Notebook'],
+    ['Smartwatch', 'Smartphone'],
+    ['Fone de ouvido sem fio', 'Headset gamer'],
+    ['Walkie-talkie', 'Pager'],
+    ['Telefone fixo', 'Walkie-talkie'],
+    ['Computador desktop', 'Notebook'],
+    ['Monitor', 'TV 8K'],
+    ['Teclado mecânico', 'Mouse gamer'],
+    ['Webcam', 'Scanner'],
+    ['Impressora 3D', 'Scanner'],
+    ['Projetor', 'Monitor'],
+    ['PlayStation', 'Xbox'],
+    ['Nintendo Switch', 'PlayStation'],
+    ['Controle de jogo', 'Mouse gamer'],
+    ['VR headset', 'Óculos AR'],
+    ['Soundbar', 'Fone de ouvido sem fio'],
+    ['Xbox', 'Nintendo Switch'],
+    ['Tablet', 'Telemóvel'],
+    ['Projetor', 'TV 8K']
+  ],
   'Comida': [
     ['Maçã', 'Banana', 'Pêra', 'Uva', 'Morango', 'Melancia'],
     ['Brócolis', 'Cenoura', 'Alface', 'Espinapre', 'Beterraba'],
