@@ -35,7 +35,7 @@ const App: React.FC = () => {
     undercoverCount: 0,
     mode: GameMode.IMPOSTOR
   });
-  const [isViewingFoodFolder, setIsViewingFoodFolder] = useState(false);
+  const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
   const [distributionIndex, setDistributionIndex] = useState(0);
   const [isWordVisible, setIsWordVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -91,7 +91,7 @@ const App: React.FC = () => {
   const startGame = () => {
     if (players.length < 3) return;
     setPhase(GamePhase.CATEGORY_SELECTION);
-    setIsViewingFoodFolder(false);
+    setActiveGroupId(null);
   };
 
   const setupWords = async (category: string) => {
@@ -159,7 +159,7 @@ const App: React.FC = () => {
     setPlayers(players.map(p => ({ ...p, isEliminated: false, word: '', role: PlayerRole.CITIZEN })));
     setPhase(GamePhase.LOBBY);
     setWinner(null);
-    setIsViewingFoodFolder(false);
+    setActiveGroupId(null);
   };
 
   const updateImpostorCount = (val: number) => {
@@ -173,10 +173,20 @@ const App: React.FC = () => {
 
   const handleCategoryClick = (cat: any) => {
     if (cat.isGroup) {
-      setIsViewingFoodFolder(true);
+      setActiveGroupId(cat.id);
     } else {
       setupWords(cat.name);
     }
+  };
+
+  const getSubcategories = () => {
+    if (activeGroupId === 'food_group') return FOOD_CATEGORIES;
+    return [];
+  };
+
+  const getTitle = () => {
+    if (activeGroupId === 'food_group') return 'Tipos de Comida';
+    return 'Escolha o Tema!';
   };
 
   return (
@@ -306,21 +316,21 @@ const App: React.FC = () => {
         {phase === GamePhase.CATEGORY_SELECTION && (
           <div className="space-y-4 animate-in slide-in-from-right-10 duration-300 w-full flex flex-col h-full overflow-hidden">
             <div className="flex items-center justify-between px-2 shrink-0">
-              {isViewingFoodFolder && (
+              {activeGroupId && (
                 <button 
-                  onClick={() => setIsViewingFoodFolder(false)}
+                  onClick={() => setActiveGroupId(null)}
                   className="bg-white/20 p-2 rounded-full text-white active:scale-90 transition-transform"
                 >
                   <ChevronLeft size={24} />
                 </button>
               )}
-              <h2 className={`text-2xl font-black text-center text-white drop-shadow-lg flex-1 ${!isViewingFoodFolder ? 'ml-0' : 'mr-8'}`}>
-                {isViewingFoodFolder ? 'Tipos de Comida' : 'Escolha o Tema!'}
+              <h2 className={`text-2xl font-black text-center text-white drop-shadow-lg flex-1 ${!activeGroupId ? 'ml-0' : 'mr-8'}`}>
+                {getTitle()}
               </h2>
             </div>
 
             <div className="grid grid-cols-2 gap-3 pb-6 overflow-y-auto no-scrollbar pr-1 flex-1 mt-2">
-              {(isViewingFoodFolder ? (FOOD_CATEGORIES as any[]) : (MAIN_CATEGORIES as any[])).map(cat => (
+              {(activeGroupId ? (getSubcategories() as any[]) : (MAIN_CATEGORIES as any[])).map(cat => (
                 <button 
                   key={cat.id} 
                   onClick={() => handleCategoryClick(cat)} 
