@@ -261,31 +261,13 @@ const App: React.FC = () => {
       <main className="flex-1 p-4 overflow-y-auto no-scrollbar overscroll-contain flex flex-col justify-center">
         {phase === GamePhase.LOBBY && (
           <div className="space-y-4 animate-in fade-in duration-500 w-full py-4">
-            <div className="flex flex-col items-center mb-2">
+            <div className="flex flex-col items-center mb-6">
               <div className="relative">
                 <div className="absolute inset-0 blur-3xl bg-[#00FFFF]/20 rounded-full scale-150 animate-pulse" />
                 <div className="bg-[#2F4F4F]/40 backdrop-blur-xl p-10 rounded-[3.5rem] border-4 border-[#8A2BE2]/50 shadow-[0_0_30px_rgba(138,43,226,0.3)] animate-bounce duration-[3000ms] relative">
                    <ModeIcon className="w-24 h-24" />
                 </div>
               </div>
-              <div className="bg-white/5 px-4 py-1 rounded-full border border-white/10 mt-6 backdrop-blur-sm">
-                <span className="text-[10px] font-black text-[#00FFFF] uppercase tracking-widest">GabrielH [ 17 NÍVEL ]</span>
-              </div>
-            </div>
-
-            <div className="bg-[#2F4F4F]/50 backdrop-blur-md rounded-[2rem] p-1 border border-white/10 flex shadow-inner">
-              <button 
-                onClick={() => setGameMode(GameMode.IMPOSTOR)}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-[1.8rem] font-black transition-all ${settings.mode === GameMode.IMPOSTOR ? 'bg-[#FF1493] text-white shadow-[0_0_15px_rgba(255,20,147,0.5)]' : 'text-white hover:bg-white/5'}`}
-              >
-                <Ghost size={20} /> IMPOSTOR
-              </button>
-              <button 
-                onClick={() => setGameMode(GameMode.SPY)}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-[1.8rem] font-black transition-all ${settings.mode === GameMode.SPY ? 'bg-[#00FFFF] text-[#4B0082] shadow-[0_0_15px_rgba(0,255,255,0.5)]' : 'text-white hover:bg-white/5'}`}
-              >
-                <Search size={20} /> ESPIÃO
-              </button>
             </div>
 
             <div className="bg-[#4B0082]/30 backdrop-blur-lg rounded-[2.5rem] p-5 border border-white/10 shadow-2xl flex flex-col">
@@ -342,7 +324,21 @@ const App: React.FC = () => {
             </div>
 
             <div className="bg-[#4B0082]/30 backdrop-blur-lg rounded-[2.5rem] p-6 border border-white/10 shadow-2xl space-y-4">
-              <h2 className="text-lg font-bold text-[#FF1493]">Opções Legais</h2>
+              <div className="bg-[#2F4F4F]/50 backdrop-blur-md rounded-[2rem] p-1 border border-white/10 flex shadow-inner">
+                <button 
+                  onClick={() => setGameMode(GameMode.IMPOSTOR)}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-[1.8rem] font-black transition-all ${settings.mode === GameMode.IMPOSTOR ? 'bg-[#FF1493] text-white shadow-[0_0_15px_rgba(255,20,147,0.5)]' : 'text-white hover:bg-white/5'}`}
+                >
+                  <Ghost size={20} /> IMPOSTOR
+                </button>
+                <button 
+                  onClick={() => setGameMode(GameMode.SPY)}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-[1.8rem] font-black transition-all ${settings.mode === GameMode.SPY ? 'bg-[#00FFFF] text-[#4B0082] shadow-[0_0_15px_rgba(0,255,255,0.5)]' : 'text-white hover:bg-white/5'}`}
+                >
+                  <Search size={20} /> ESPIÃO
+                </button>
+              </div>
+
               <div className="bg-white/5 p-4 rounded-[2rem] border border-white/5 flex items-center justify-between">
                 <span className="text-lg font-black text-white italic">
                    {getImpostorLabel()}
