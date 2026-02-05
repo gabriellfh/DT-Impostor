@@ -263,6 +263,8 @@ const App: React.FC = () => {
       setPhase(GamePhase.LOBBY);
     } else if (phase === GamePhase.WORD_DISTRIBUTION) {
       setPhase(GamePhase.CATEGORY_SELECTION);
+    } else if (phase === GamePhase.DECISION) {
+      setPhase(GamePhase.TIMER);
     } else {
       resetGame();
     }
@@ -432,7 +434,7 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <button onClick={startGame} disabled={players.length < 3} className="w-full bg-[#FF1493] py-4 rounded-[1.5rem] font-black text-xl text-white shadow-[0_4px_0_rgba(138,43,226,0.4)] flex items-center justify-center gap-3 active:translate-y-1 active:shadow-none transition-all disabled:opacity-40 shrink-0">
+            <button onClick={startGame} disabled={players.length < 3} className="w-full bg-[#FF1493] py-4 rounded-[1.5rem] font-black text-xl text-white flex items-center justify-center gap-3 active:translate-y-1 transition-all disabled:opacity-40 shrink-0">
               <Play fill="currentColor" size={24} /> VAMOS JOGAR!
             </button>
           </div>
@@ -469,14 +471,16 @@ const App: React.FC = () => {
               </div>
               <button 
                 onClick={() => setIsWordVisible(!isWordVisible)} 
-                className={`w-full aspect-square rounded-[3rem] border-6 border-dashed flex flex-col items-center justify-center transition-all duration-500 ${isWordVisible ? 'bg-white border-[#00FFFF] scale-105 shadow-[0_0_30px_rgba(0,255,255,0.3)]' : 'bg-[#2F4F4F]/40 border-white/10'}`}
+                className={`w-[80%] aspect-square rounded-[3rem] border-6 border-dashed flex flex-col items-center justify-center transition-all duration-500 ${isWordVisible ? 'bg-white border-[#00FFFF] scale-105 shadow-[0_0_30px_rgba(0,255,255,0.3)]' : 'bg-[#2F4F4F]/40 border-white/10'}`}
               >
                 {isWordVisible ? (
                   <div className="text-center p-3">
-                    <p className="text-lg font-arcadia text-[#4B0082] mb-3 uppercase tracking-wider">
-                      {players[distributionIndex].role === PlayerRole.CITIZEN ? 'CIDADÃO' : settings.mode === GameMode.IMPOSTOR ? 'IMPOSTOR' : 'ESPIÃO'}
-                    </p>
-                    <p className="text-5xl font-black text-[#8A2BE2] leading-tight break-words px-2">
+                    {settings.mode === GameMode.IMPOSTOR && (
+                      <p className="text-lg font-arcadia text-[#4B0082] mb-3 uppercase tracking-wider">
+                        {players[distributionIndex].role === PlayerRole.CITIZEN ? 'CIDADÃO' : 'IMPOSTOR'}
+                      </p>
+                    )}
+                    <p className="text-6xl font-black text-[#8A2BE2] leading-tight break-words px-2">
                       {players[distributionIndex].word.includes('IMPOSTOR!') ? '?' : players[distributionIndex].word}
                     </p>
                   </div>
@@ -492,7 +496,7 @@ const App: React.FC = () => {
             <button 
               onClick={nextDistribution} 
               disabled={!isWordVisible} 
-              className={`w-full py-4 rounded-[1.5rem] font-black text-xl shadow-[0_4px_0_rgba(0,0,0,0.2)] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center shrink-0 ${isWordVisible ? 'bg-[#00FFFF] text-[#4B0082]' : 'bg-white/5 text-white/10 opacity-30 cursor-not-allowed'}`}
+              className={`w-full py-4 rounded-[1.5rem] font-black text-xl active:translate-y-1 transition-all flex items-center justify-center shrink-0 ${isWordVisible ? 'bg-[#00FFFF] text-[#4B0082]' : 'bg-white/5 text-white/10 opacity-30 cursor-not-allowed'}`}
             >
               {distributionIndex === players.length - 1 ? 'JOGAR' : 'PRÓXIMO'}
             </button>
@@ -514,23 +518,34 @@ const App: React.FC = () => {
                 </p>
               </div>
 
-              <div className="flex flex-col items-center justify-center flex-1">
-                <div className="relative group">
-                  <div className="absolute inset-0 bg-[#00FFFF] rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
-                  <div className="w-48 h-48 bg-gradient-to-br from-[#8A2BE2] to-[#4B0082] rounded-full border-4 border-white/10 flex flex-col items-center justify-center shadow-2xl relative">
-                    <Skull size={64} className="text-white mb-2 opacity-50" />
-                    <Zap size={32} className="text-[#00FFFF] absolute bottom-8 animate-bounce" />
-                  </div>
-                </div>
-              </div>
+              <div className="flex-1"></div>
             </div>
 
             <button 
-              onClick={() => setPhase(GamePhase.VOTING)} 
-              className="w-full bg-[#FF1493] py-4 rounded-[1.5rem] font-black text-2xl text-white shadow-[0_4px_0_rgba(0,0,0,0.2)] flex items-center justify-center gap-3 active:translate-y-1 active:shadow-none transition-all z-10"
+              onClick={() => setPhase(GamePhase.DECISION)} 
+              className="w-full bg-[#FF1493] py-4 rounded-[1.5rem] font-black text-2xl text-white flex items-center justify-center gap-3 active:translate-y-1 transition-all z-10"
             >
               ADIVINHAR
             </button>
+          </div>
+        )}
+
+        {phase === GamePhase.DECISION && (
+          <div className="h-full flex flex-col items-center justify-center w-full relative animate-in fade-in duration-500 overflow-hidden">
+            <div className="flex flex-col items-center justify-center gap-12 w-full max-w-xs">
+               <button 
+                  onClick={() => setPhase(GamePhase.VOTING)} 
+                  className="w-full bg-[#FF1493] py-5 rounded-[1.5rem] font-black text-xl text-white flex items-center justify-center shadow-2xl active:scale-95 transition-all uppercase tracking-tight"
+                >
+                  Adivinhar entre Amigos
+                </button>
+                <button 
+                  onClick={() => setPhase(GamePhase.VOTING)} 
+                  className="w-full bg-[#FF1493] py-5 rounded-[1.5rem] font-black text-xl text-white flex items-center justify-center shadow-2xl active:scale-95 transition-all uppercase tracking-tight"
+                >
+                  Adivinhar na App
+                </button>
+            </div>
           </div>
         )}
 
