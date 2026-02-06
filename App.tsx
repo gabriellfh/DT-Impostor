@@ -18,7 +18,8 @@ import {
   ChevronLeft,
   Clock,
   Skull,
-  Zap
+  Zap,
+  HelpCircle
 } from 'lucide-react';
 
 const SamuraiIcon = ({ className = "w-12 h-12" }: { className?: string }) => (
@@ -59,8 +60,8 @@ const CountryIcon = ({ className = "w-12 h-12" }: { className?: string }) => (
   </svg>
 );
 
-const FloatingEmojis = () => {
-  const emojis = ['🕵️', '👻', '🤫', '🔎', '💀', '🤡', '👽', '👺'];
+const FloatingEmojis = ({ mysteryOnly = false }: { mysteryOnly?: boolean }) => {
+  const emojis = mysteryOnly ? ['?', '🔍', '🤔', '🤫', '🕯️', '👀'] : ['🕵️', '👻', '🤫', '🔎', '💀', '🤡', '👽', '👺'];
   const [particles, setParticles] = useState<any[]>([]);
 
   useEffect(() => {
@@ -117,6 +118,10 @@ const App: React.FC = () => {
     mode: GameMode.IMPOSTOR
   });
   const [distributionIndex, setDistributionIndex] = useState(0);
+  const [votingIndex, setVotingIndex] = useState(0);
+  const [selectedSuspectId, setSelectedSuspectId] = useState<string | null>(null);
+  const [voteCountMap, setVoteCountMap] = useState<Record<string, number>>({});
+  
   const [isWordVisible, setIsWordVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [winner, setWinner] = useState<string | null>(null);
@@ -231,6 +236,48 @@ const App: React.FC = () => {
     }
   };
 
+  const startAppVoting = () => {
+    setVotingIndex(0);
+    setVoteCountMap({});
+    setSelectedSuspectId(null);
+    setPhase(GamePhase.VOTING_SEQUENCE);
+  };
+
+  const recordVoteAndNext = () => {
+    if (!selectedSuspectId) return;
+
+    const newMap = { ...voteCountMap };
+    newMap[selectedSuspectId] = (newMap[selectedSuspectId] || 0) + 1;
+    setVoteCountMap(newMap);
+
+    const activePlayers = players.filter(p => !p.isEliminated);
+    if (votingIndex < activePlayers.length - 1) {
+      setVotingIndex(votingIndex + 1);
+      setSelectedSuspectId(null);
+    } else {
+      // Finalizar votação e processar o mais votado
+      processVotingResults(newMap);
+    }
+  };
+
+  const processVotingResults = (votes: Record<string, number>) => {
+    let mostVotedId = '';
+    let maxVotes = -1;
+
+    Object.entries(votes).forEach(([id, count]) => {
+      if (count > maxVotes) {
+        maxVotes = count;
+        mostVotedId = id;
+      }
+    });
+
+    if (mostVotedId) {
+      handleVote(mostVotedId);
+    } else {
+      resetGame();
+    }
+  };
+
   const handleVote = (id: string) => {
     const votedPlayer = players.find(p => p.id === id);
     if (!votedPlayer) return;
@@ -252,6 +299,11 @@ const App: React.FC = () => {
     }
   };
 
+  const finishGameFriends = () => {
+    setWinner('FIM DO JOGO');
+    setPhase(GamePhase.REVEAL);
+  };
+
   const resetGame = () => {
     setPlayers(players.map(p => ({ ...p, isEliminated: false, word: '', role: PlayerRole.CITIZEN })));
     setPhase(GamePhase.LOBBY);
@@ -265,6 +317,8 @@ const App: React.FC = () => {
       setPhase(GamePhase.CATEGORY_SELECTION);
     } else if (phase === GamePhase.DECISION) {
       setPhase(GamePhase.TIMER);
+    } else if (phase === GamePhase.GUESS_FRIENDS || phase === GamePhase.VOTING_SEQUENCE) {
+      setPhase(GamePhase.DECISION);
     } else {
       resetGame();
     }
@@ -318,6 +372,9 @@ const App: React.FC = () => {
   const HeaderGhost = ({ className = "w-7 h-7" }: { className?: string }) => (
     <Ghost className={`${className} text-[#00FFFF] drop-shadow-[0_0_8px_rgba(0,255,255,0.5)]`} strokeWidth={3} />
   );
+
+  const activePlayers = players.filter(p => !p.isEliminated);
+  const currentVoter = activePlayers[votingIndex];
 
   return (
     <div className="h-screen h-[100dvh] max-h-screen max-w-md mx-auto flex flex-col overflow-hidden relative">
@@ -464,30 +521,36 @@ const App: React.FC = () => {
                 </span>
             </div>
 
-            <div className="flex-1 flex flex-col items-center justify-center gap-6">
+            <div className="flex-1 flex flex-col items-center justify-center gap-4">
               <div className="text-center">
                 <span className="text-6xl mb-1 block filter drop-shadow-[0_0_10px_rgba(0,255,255,0.3)]">{players[distributionIndex].avatar}</span>
                 <h2 className="text-2xl font-black text-white italic">{players[distributionIndex].name}</h2>
               </div>
               <button 
                 onClick={() => setIsWordVisible(!isWordVisible)} 
-                className={`w-[80%] aspect-square rounded-[3rem] border-6 border-dashed flex flex-col items-center justify-center transition-all duration-500 ${isWordVisible ? 'bg-white border-[#00FFFF] scale-105 shadow-[0_0_30px_rgba(0,255,255,0.3)]' : 'bg-[#2F4F4F]/40 border-white/10'}`}
+                className={`w-[92%] max-w-[360px] aspect-square rounded-[3.5rem] border-6 border-dashed flex flex-col items-center justify-center transition-all duration-500 overflow-hidden ${isWordVisible ? 'bg-white border-[#00FFFF] scale-100 shadow-[0_0_40px_rgba(0,255,255,0.4)]' : 'bg-[#2F4F4F]/40 border-white/10'}`}
               >
                 {isWordVisible ? (
-                  <div className="text-center p-3">
-                    {settings.mode === GameMode.IMPOSTOR && (
-                      <p className="text-lg font-arcadia text-[#4B0082] mb-3 uppercase tracking-wider">
-                        {players[distributionIndex].role === PlayerRole.CITIZEN ? 'CIDADÃO' : 'IMPOSTOR'}
-                      </p>
-                    )}
-                    <p className="text-6xl font-black text-[#8A2BE2] leading-tight break-words px-2">
-                      {players[distributionIndex].word.includes('IMPOSTOR!') ? '?' : players[distributionIndex].word}
+                  <div className="text-center p-6 w-full flex flex-col items-center justify-center h-full">
+                    <p 
+                      className="text-xl xs:text-2xl font-arcadia mb-6 uppercase tracking-widest shrink-0 font-bold"
+                      style={{ color: players[distributionIndex].role === PlayerRole.CITIZEN ? '#48cae4' : '#dd2d4a' }}
+                    >
+                      {players[distributionIndex].role === PlayerRole.CITIZEN ? 'CIDADÃO' : (settings.mode === GameMode.IMPOSTOR ? 'IMPOSTOR' : 'ESPIÃO')}
                     </p>
+                    <div className="w-full flex-1 flex items-center justify-center overflow-hidden">
+                      <p 
+                        className="text-5xl xs:text-7xl font-black leading-[1.1] break-words px-2 text-center max-h-full overflow-hidden hyphens-auto drop-shadow-sm"
+                        style={{ color: players[distributionIndex].word.includes('IMPOSTOR!') ? '#dd2d4a' : '#8A2BE2' }}
+                      >
+                        {players[distributionIndex].word.includes('IMPOSTOR!') ? '?' : players[distributionIndex].word}
+                      </p>
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center">
-                    <Eye size={40} className="text-white/20 mx-auto mb-1" />
-                    <p className="font-arcadia text-white/30 text-sm">Revelar</p>
+                    <Eye size={56} className="text-white/20 mx-auto mb-3" />
+                    <p className="font-arcadia text-white/30 text-xl uppercase tracking-[0.2em] font-bold">Revelar</p>
                   </div>
                 )}
               </button>
@@ -498,7 +561,7 @@ const App: React.FC = () => {
               disabled={!isWordVisible} 
               className={`w-full py-4 rounded-[1.5rem] font-black text-xl active:translate-y-1 transition-all flex items-center justify-center shrink-0 ${isWordVisible ? 'bg-[#00FFFF] text-[#4B0082]' : 'bg-white/5 text-white/10 opacity-30 cursor-not-allowed'}`}
             >
-              {distributionIndex === players.length - 1 ? 'JOGAR' : 'PRÓXIMO'}
+              {distributionIndex === players.length - 1 ? 'PRONTO' : 'PRÓXIMO'}
             </button>
           </div>
         )}
@@ -531,21 +594,84 @@ const App: React.FC = () => {
         )}
 
         {phase === GamePhase.DECISION && (
-          <div className="h-full flex flex-col items-center justify-center w-full relative animate-in fade-in duration-500 overflow-hidden">
-            <div className="flex flex-col items-center justify-center gap-12 w-full max-w-xs">
+          <div className="h-full flex flex-col items-center justify-center w-full relative animate-in fade-in duration-500 overflow-hidden px-4">
+            <div className="flex flex-col items-center justify-center gap-16 w-full max-w-sm">
                <button 
-                  onClick={() => setPhase(GamePhase.VOTING)} 
-                  className="w-full bg-[#FF1493] py-5 rounded-[1.5rem] font-black text-xl text-white flex items-center justify-center shadow-2xl active:scale-95 transition-all uppercase tracking-tight"
+                  onClick={() => setPhase(GamePhase.GUESS_FRIENDS)} 
+                  className="w-full bg-[#FF1493] py-6 rounded-[1.8rem] font-black text-2xl text-white flex items-center justify-center shadow-[0_10px_30px_rgba(255,20,147,0.3)] active:scale-95 transition-all uppercase tracking-tighter"
                 >
                   Adivinhar entre Amigos
                 </button>
                 <button 
-                  onClick={() => setPhase(GamePhase.VOTING)} 
-                  className="w-full bg-[#FF1493] py-5 rounded-[1.5rem] font-black text-xl text-white flex items-center justify-center shadow-2xl active:scale-95 transition-all uppercase tracking-tight"
+                  onClick={startAppVoting} 
+                  className="w-full bg-[#FF1493] py-6 rounded-[1.8rem] font-black text-2xl text-white flex items-center justify-center shadow-[0_10px_30px_rgba(255,20,147,0.3)] active:scale-95 transition-all uppercase tracking-tighter"
                 >
                   Adivinhar na App
                 </button>
             </div>
+          </div>
+        )}
+
+        {phase === GamePhase.GUESS_FRIENDS && (
+          <div className="h-full flex flex-col items-center justify-center w-full relative animate-in fade-in duration-500 overflow-hidden px-4">
+            <FloatingEmojis mysteryOnly={true} />
+            <div className="flex-1 flex flex-col items-center justify-center w-full z-10 gap-8">
+              <p className="text-white/40 font-arcadia text-xs uppercase tracking-[0.3em] text-center max-w-[200px] leading-relaxed">
+                Cliquem quando estiverem prontos!
+              </p>
+              <button 
+                onClick={finishGameFriends}
+                className="w-full bg-[#00FFFF] text-[#4B0082] py-6 rounded-[1.8rem] font-black text-3xl shadow-[0_15px_40px_rgba(0,255,255,0.4)] active:scale-95 transition-all uppercase tracking-widest flex items-center justify-center gap-4 group"
+              >
+                REVELAR
+              </button>
+            </div>
+          </div>
+        )}
+
+        {phase === GamePhase.VOTING_SEQUENCE && currentVoter && (
+          <div className="h-full flex flex-col py-2 w-full relative overflow-hidden animate-in slide-in-from-right duration-300">
+            <div className="absolute top-2 right-2 bg-white/10 px-3 py-1 rounded-full border border-white/10 shadow-sm backdrop-blur-sm">
+                <span className="font-arcadia text-[10px] text-[#FF1493] tracking-widest">
+                  {votingIndex + 1}/{activePlayers.length}
+                </span>
+            </div>
+
+            <div className="flex-1 flex flex-col items-center pt-10">
+              <p className="text-[#FF1493] font-arcadia text-2xl uppercase tracking-tighter italic mb-4">Quem é o Impostor?</p>
+              
+              <div className="flex flex-col items-center gap-2 mb-8">
+                <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center text-5xl shadow-lg border-2 border-[#FF1493]/30">
+                  {currentVoter.avatar}
+                </div>
+                <h2 className="text-xl font-black text-white italic uppercase tracking-widest">{currentVoter.name}</h2>
+                <p className="text-white/40 text-[10px] uppercase font-bold">É a sua vez de votar!</p>
+              </div>
+
+              <div className="w-full flex-1 overflow-y-auto no-scrollbar px-2">
+                <p className="text-white/60 text-[11px] font-bold uppercase tracking-[0.2em] mb-3 ml-2">Suspeitos:</p>
+                <div className="grid grid-cols-2 gap-2 pb-6">
+                  {activePlayers.map(suspect => (
+                    <button 
+                      key={suspect.id} 
+                      onClick={() => setSelectedSuspectId(suspect.id)}
+                      className={`p-3 rounded-[1.5rem] border-2 flex flex-col items-center transition-all ${selectedSuspectId === suspect.id ? 'bg-[#FF1493]/30 border-[#FF1493] scale-105 shadow-[0_0_20px_rgba(255,20,147,0.3)]' : 'bg-white/5 border-white/5 opacity-80'}`}
+                    >
+                      <span className="text-3xl mb-1">{suspect.avatar}</span>
+                      <span className="font-black text-white text-[10px] truncate w-full text-center uppercase">{suspect.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            <button 
+              onClick={recordVoteAndNext} 
+              disabled={!selectedSuspectId} 
+              className={`w-full py-4 rounded-[1.5rem] font-black text-xl active:translate-y-1 transition-all flex items-center justify-center shrink-0 ${selectedSuspectId ? 'bg-[#00FFFF] text-[#4B0082]' : 'bg-white/5 text-white/10 opacity-30 cursor-not-allowed'}`}
+            >
+              {votingIndex === activePlayers.length - 1 ? 'PRONTO' : 'PRÓXIMO'}
+            </button>
           </div>
         )}
 
