@@ -23,10 +23,40 @@ import {
 } from 'lucide-react';
 
 const AVATAR_COLORS = [
-  '#FF5733', '#33FF57', '#3357FF', '#F333FF', '#33FFF3',
-  '#FFB833', '#8D33FF', '#FF3385', '#33FFBD', '#C70039',
-  '#900C3F', '#581845', '#1ABC9C', '#F1C40F', '#E67E22',
-  '#95A5A6', '#34495E', '#D35400', '#27AE60', '#2980B9'
+  // Vermelhos e Rosas
+  '#FF0000', '#DC2626', '#B91C1C', '#991B1B', '#F87171',
+  '#EC4899', '#DB2777', '#BE185D', '#9D174D', '#F472B6',
+  '#FF1493', '#FF69B4', '#FFB6C1', '#C71585', '#E11D48',
+  
+  // Laranjas e Amarelos
+  '#FF4500', '#F97316', '#EA580C', '#C2410C', '#FB923C',
+  '#FFA500', '#FACC15', '#EAB308', '#CA8A04', '#A16207',
+  '#FFD700', '#FFF700', '#FF8C00', '#ED8936', '#F6AD55',
+  
+  // Verdes
+  '#00FF00', '#22C55E', '#16A34A', '#15803D', '#4ADE80',
+  '#008000', '#10B981', '#059669', '#047857', '#34D399',
+  '#32CD32', '#9ACD32', '#ADFF2F', '#00FF7F', '#00FA9A',
+  
+  // Azuis e Cianos
+  '#00FFFF', '#06B6D4', '#0891B2', '#0E7490', '#22D3EE',
+  '#00BFFF', '#3B82F6', '#2563EB', '#1D4ED8', '#60A5FA',
+  '#0000FF', '#0000CD', '#00008B', '#1E90FF', '#4169E1',
+  '#14B8A6', '#0D9488', '#0F766E', '#2DD4BF', '#5EEAD4',
+  
+  // Roxos e Violetas
+  '#8B5CF6', '#7C3AED', '#6D28D9', '#5B21B6', '#A78BFA',
+  '#800080', '#A855F7', '#9333EA', '#7E22CE', '#C084FC',
+  '#4B0082', '#9400D3', '#8A2BE2', '#DA70D6', '#BA55D3',
+  
+  // Tons de Marrom e Neutros
+  '#8B4513', '#A0522D', '#D2691E', '#CD853F', '#F4A460',
+  '#78350F', '#92400E', '#B45309', '#D97706', '#F59E0B',
+  
+  // Grises e Escuros
+  '#64748B', '#475569', '#334155', '#1E293B', '#0F172A',
+  '#71717A', '#52525B', '#3F3F46', '#27272A', '#18181B',
+  '#808080', '#A9A9A9', '#C0C0C0', '#2F4F4F', '#000000'
 ];
 
 const SamuraiIcon = ({ className = "w-12 h-12" }: { className?: string }) => (
@@ -480,7 +510,7 @@ const App: React.FC = () => {
                     <div className="flex items-center gap-2 flex-1">
                       <button 
                         onClick={() => openAvatarPicker(player.id)}
-                        className="w-10 h-10 flex items-center justify-center rounded-xl text-xl hover:opacity-80 transition-all shrink-0 shadow-lg border-2 border-white/10"
+                        className="w-10 h-10 flex items-center justify-center rounded-full text-xl hover:opacity-80 transition-all shrink-0 shadow-lg border-2 border-white/10"
                         style={{ backgroundColor: player.avatarColor || '#333' }}
                       >
                         {player.avatar}
@@ -556,7 +586,7 @@ const App: React.FC = () => {
             <div className="flex-1 flex flex-col items-center justify-center gap-4">
               <div className="text-center">
                 <span 
-                  className="text-6xl mb-1 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto shadow-2xl border-4 border-white/20"
+                  className="text-6xl mb-1 w-24 h-24 rounded-full flex items-center justify-center mx-auto shadow-2xl border-4 border-white/20"
                   style={{ backgroundColor: players[distributionIndex].avatarColor || '#333' }}
                 >
                   {players[distributionIndex].avatar}
@@ -698,7 +728,7 @@ const App: React.FC = () => {
                       className={`p-3 rounded-[1.5rem] border-2 flex flex-col items-center transition-all ${selectedSuspectId === suspect.id ? 'bg-[#FF1493]/30 border-[#FF1493] scale-105 shadow-[0_0_20px_rgba(255,20,147,0.3)]' : 'bg-white/5 border-white/5 opacity-80'}`}
                     >
                       <span 
-                        className="text-3xl mb-1 w-12 h-12 flex items-center justify-center rounded-xl shadow-md border border-white/10"
+                        className="text-3xl mb-1 w-12 h-12 flex items-center justify-center rounded-full shadow-md border border-white/10"
                         style={{ backgroundColor: suspect.avatarColor || '#333' }}
                       >
                         {suspect.avatar}
@@ -727,7 +757,7 @@ const App: React.FC = () => {
               {players.filter(p => !p.isEliminated).map(p => (
                 <button key={p.id} onClick={() => handleVote(p.id)} className="bg-white/5 p-3 rounded-[1.5rem] border-2 border-white/5 flex flex-col items-center hover:bg-[#FF1493]/20 hover:border-[#FF1493]/50 transition-all">
                   <span 
-                    className="text-4xl mb-1 w-16 h-16 flex items-center justify-center rounded-2xl shadow-xl border-2 border-white/10"
+                    className="text-4xl mb-1 w-16 h-16 flex items-center justify-center rounded-full shadow-xl border-2 border-white/10"
                     style={{ backgroundColor: p.avatarColor || '#333' }}
                   >
                     {p.avatar}
@@ -753,7 +783,7 @@ const App: React.FC = () => {
                 <div key={p.id} className={`flex items-center justify-between p-2 rounded-[1.2rem] border-2 transition-all ${p.role !== PlayerRole.CITIZEN ? 'bg-[#FF1493]/20 border-[#FF1493]' : 'bg-white/5 border-white/5 opacity-80'}`}>
                   <div className="flex items-center gap-2">
                     <span 
-                      className="text-xl w-8 h-8 flex items-center justify-center rounded-lg shadow-sm border border-white/10"
+                      className="text-xl w-8 h-8 flex items-center justify-center rounded-full shadow-sm border border-white/10"
                       style={{ backgroundColor: p.avatarColor || '#333' }}
                     >
                       {p.avatar}
@@ -787,11 +817,11 @@ const App: React.FC = () => {
 
       {showAvatarPicker && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2F4F4F]/80 backdrop-blur-md">
-          <div className="bg-[#4B0082] rounded-[2.5rem] w-full max-w-xs border-3 border-[#00FFFF] shadow-[0_0_30px_rgba(0,255,255,0.2)] overflow-hidden">
-            <div className="flex border-b-2 border-white/10 bg-[#8A2BE2]/50 relative">
+          <div className="bg-[#4B0082] rounded-[2.5rem] w-full max-w-[340px] border-3 border-[#00FFFF] shadow-[0_0_40px_rgba(0,255,255,0.3)] overflow-hidden flex flex-col">
+            <div className="flex bg-[#8A2BE2]/40 relative items-stretch border-b border-white/10">
               <button 
                 onClick={() => setPickerTab('avatar')}
-                className={`flex-1 p-4 flex items-center justify-center gap-2 transition-all ${pickerTab === 'avatar' ? 'bg-white/10' : 'opacity-40 hover:opacity-100'}`}
+                className={`flex-1 pt-7 pb-5 px-4 flex items-center justify-center gap-2 transition-all ${pickerTab === 'avatar' ? 'bg-white/10 border-b-2 border-[#00FFFF]' : 'opacity-40 hover:opacity-100'}`}
               >
                 <MiniPersonIcon className="w-5 h-5 text-white" />
                 <h3 className="text-white font-black text-sm uppercase tracking-wider">Avatar</h3>
@@ -799,7 +829,7 @@ const App: React.FC = () => {
               
               <button 
                 onClick={() => setPickerTab('bg')}
-                className={`flex-1 p-4 flex items-center justify-center gap-2 transition-all ${pickerTab === 'bg' ? 'bg-white/10' : 'opacity-40 hover:opacity-100'}`}
+                className={`flex-1 pt-7 pb-5 px-4 flex items-center justify-center gap-2 transition-all ${pickerTab === 'bg' ? 'bg-white/10 border-b-2 border-[#00FFFF]' : 'opacity-40 hover:opacity-100'}`}
               >
                 <FrameIcon className="w-5 h-5 text-white" />
                 <h3 className="text-white font-black text-sm uppercase tracking-wider">Fundo</h3>
@@ -807,29 +837,29 @@ const App: React.FC = () => {
 
               <button 
                 onClick={() => setShowAvatarPicker(false)} 
-                className="absolute -top-3 -right-3 bg-[#FF1493] text-white p-2 rounded-full active:scale-90 shadow-2xl z-20 border-2 border-white"
+                className="absolute top-2 right-2 bg-[#FF1493] text-white w-9 h-9 rounded-full active:scale-90 shadow-lg border-2 border-white/30 z-20 flex items-center justify-center transition-transform hover:rotate-90"
               >
-                <X size={18} strokeWidth={4} />
+                <X size={20} strokeWidth={4} />
               </button>
             </div>
 
-            <div className="p-3 bg-[#2F4F4F]/30">
-              <div className="flex items-center justify-center mb-4 py-4 bg-white/5 rounded-2xl border border-white/10">
+            <div className="p-4 bg-[#2F4F4F]/40 flex flex-col gap-5">
+              <div className="flex items-center justify-center py-6 bg-white/5 rounded-3xl border border-white/10 shadow-inner">
                 <div 
-                  className="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl shadow-2xl border-2 border-white/20 transition-all duration-300"
+                  className="w-28 h-28 rounded-full flex items-center justify-center text-6xl shadow-2xl border-3 border-white/20 transition-all duration-300 transform"
                   style={{ backgroundColor: players.find(p => p.id === activePlayerId)?.avatarColor || '#333' }}
                 >
                   {players.find(p => p.id === activePlayerId)?.avatar}
                 </div>
               </div>
 
-              <div className="max-h-[30vh] overflow-y-auto no-scrollbar grid grid-cols-5 gap-2">
+              <div className="max-h-[32vh] overflow-y-auto no-scrollbar grid grid-cols-5 gap-3 px-1 py-1">
                 {pickerTab === 'avatar' ? (
                   AVATARS.map((avatar, index) => (
                     <button 
                       key={index} 
                       onClick={() => selectAvatar(avatar)} 
-                      className={`aspect-square bg-white/5 rounded-xl flex items-center justify-center text-2xl hover:bg-[#00FFFF] hover:text-[#4B0082] transition-all ${players.find(p => p.id === activePlayerId)?.avatar === avatar ? 'ring-2 ring-[#00FFFF] bg-white/20 shadow-inner' : ''}`}
+                      className={`aspect-square bg-white/5 rounded-2xl flex items-center justify-center text-3xl hover:bg-[#00FFFF]/20 hover:scale-105 transition-all ${players.find(p => p.id === activePlayerId)?.avatar === avatar ? 'ring-3 ring-[#00FFFF] bg-white/20 shadow-lg scale-105' : 'border border-white/5'}`}
                     >
                       {avatar}
                     </button>
@@ -839,7 +869,7 @@ const App: React.FC = () => {
                     <button 
                       key={index} 
                       onClick={() => selectColor(color)} 
-                      className={`aspect-square rounded-xl border-2 transition-all hover:scale-110 ${players.find(p => p.id === activePlayerId)?.avatarColor === color ? 'border-white ring-2 ring-[#00FFFF] shadow-xl scale-110' : 'border-transparent'}`}
+                      className={`aspect-square rounded-full border-3 transition-all hover:scale-110 shadow-md ${players.find(p => p.id === activePlayerId)?.avatarColor === color ? 'border-white ring-4 ring-[#00FFFF]/50 shadow-xl scale-110' : 'border-white/10'}`}
                       style={{ backgroundColor: color }}
                     />
                   ))
@@ -847,10 +877,10 @@ const App: React.FC = () => {
               </div>
             </div>
             
-            <div className="p-3 pt-0 pb-4 bg-[#2F4F4F]/30">
+            <div className="p-5 pt-0 pb-7 bg-[#2F4F4F]/40">
               <button 
                 onClick={() => setShowAvatarPicker(false)}
-                className="w-full bg-[#00FFFF] text-[#4B0082] py-3 rounded-xl font-black uppercase tracking-widest text-sm shadow-lg active:scale-95 transition-all"
+                className="w-full bg-[#00FFFF] text-[#4B0082] py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-lg shadow-[0_10px_20px_rgba(0,255,255,0.3)] active:scale-95 active:translate-y-1 transition-all"
               >
                 PRONTO
               </button>
