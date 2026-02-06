@@ -30,6 +30,7 @@ export interface Player {
   word: string;
   isEliminated: boolean;
   avatar: string;
+  avatarColor?: string;
 }
 
 export interface GameSettings {
