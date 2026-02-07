@@ -23,7 +23,8 @@ export const generateWordPair = async (category: string): Promise<WordPair> => {
   
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-flash-lite-latest', // Modelo mais rápido para mobile
+      // Use the recommended model for basic text tasks
+      model: 'gemini-3-flash-preview', 
       contents: `Gere um par de palavras para a categoria: ${category}.`,
       config: {
         systemInstruction: SYSTEM_PROMPT,

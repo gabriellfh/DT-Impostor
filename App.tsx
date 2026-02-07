@@ -570,11 +570,15 @@ const App: React.FC = () => {
             <h2 className="text-xl font-black text-center text-white drop-shadow-lg">Escolha o Tema!</h2>
             <div className="grid grid-cols-2 gap-2 pb-4 overflow-y-auto no-scrollbar flex-1">
               {MAIN_CATEGORIES.map(cat => (
-                <button key={cat.id} onClick={() => handleCategoryClick(cat)} className="bg-white/5 backdrop-blur-md p-3 rounded-[1.2rem] border-2 border-white/5 text-center transition-all hover:bg-[#8A2BE2]/20 hover:border-[#00FFFF]/30 active:scale-95 flex flex-col items-center justify-center min-h-[90px]">
+                <button 
+                  key={cat.id} 
+                  onClick={() => handleCategoryClick(cat)} 
+                  className="bg-[#90e0ef] backdrop-blur-md p-3 rounded-[1.2rem] border-2 border-white/5 text-center transition-all hover:bg-[#90e0ef]/80 hover:border-[#00FFFF]/30 active:scale-95 flex flex-col items-center justify-center min-h-[90px]"
+                >
                   <div className="mb-1">
                     {renderCategoryIcon(cat.id, cat.icon)}
                   </div>
-                  <div className="font-black text-xs text-white">{cat.name}</div>
+                  <div className="font-black text-xs text-white uppercase">{cat.name}</div>
                 </button>
               ))}
             </div>
@@ -608,7 +612,7 @@ const App: React.FC = () => {
                     {settings.mode !== GameMode.SPY && (
                       <p 
                         className="text-xl xs:text-2xl font-arcadia mb-6 uppercase tracking-widest shrink-0 font-bold"
-                        style={{ color: players[distributionIndex].role === PlayerRole.CITIZEN ? '#48cae4' : '#dd2d4a' }}
+                        style={{ color: players[distributionIndex].role === PlayerRole.CITIZEN ? '#90e0ef' : (settings.mode === GameMode.SPY ? '#00FFFF' : '#FF1493') }}
                       >
                         {players[distributionIndex].role === PlayerRole.CITIZEN ? 'CIDADÃO' : (settings.mode === GameMode.SPY ? 'ESPIÃO' : 'IMPOSTOR')}
                       </p>
@@ -765,21 +769,15 @@ const App: React.FC = () => {
           <div className="h-full flex flex-col items-center justify-center w-full relative animate-in zoom-in duration-500 overflow-y-auto no-scrollbar px-4 py-6">
             <FloatingEmojis />
             <div className="flex flex-col items-center justify-center gap-6 z-10 w-full min-h-full">
-              <div className="text-center space-y-1 shrink-0">
-                <h2 className="font-arcadia text-[#00FFFF] text-4xl tracking-widest drop-shadow-[0_0_10px_rgba(0,255,255,0.4)]">
-                  {settings.mode === GameMode.SPY ? 'ESPIÃO' : 'IMPOSTOR'}
-                </h2>
-              </div>
-
-              <div className="w-full flex flex-col items-center gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <div className="w-full flex flex-col items-center gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 <div className="text-center flex flex-col items-center gap-3">
-                  <p className="text-white/50 font-bold text-[10px] uppercase tracking-[0.2em]">
+                  <p className="text-gray-400 font-bold text-lg uppercase tracking-[0.2em]">
                     {settings.mode === GameMode.IMPOSTOR ? 'Impostor:' : 'Espião:'}
                   </p>
                   <div className="flex flex-col items-center gap-2">
                     {impostors.map(imp => (
                       <div key={imp.id} className="flex flex-col items-center gap-1">
-                        <span className="text-5xl mb-1 drop-shadow-lg">{imp.avatar}</span>
+                        <span className="text-6xl mb-1 drop-shadow-lg">{imp.avatar}</span>
                         <h3 className="text-white font-black text-3xl uppercase italic tracking-tighter">
                           {imp.name}
                         </h3>
@@ -790,7 +788,7 @@ const App: React.FC = () => {
 
                 {settings.mode === GameMode.SPY && (
                   <div className="text-center flex flex-col items-center gap-2">
-                    <p className="text-white/50 font-bold text-[10px] uppercase tracking-[0.2em]">
+                    <p className="text-gray-400 font-bold text-lg uppercase tracking-[0.2em]">
                       Palavra do Espião:
                     </p>
                     <p className="text-[#00FFFF] font-black text-4xl uppercase tracking-tight drop-shadow-sm">
@@ -800,7 +798,7 @@ const App: React.FC = () => {
                 )}
 
                 <div className="text-center flex flex-col items-center gap-2">
-                  <p className="text-white/50 font-bold text-[10px] uppercase tracking-[0.2em]">
+                  <p className="text-gray-400 font-bold text-lg uppercase tracking-[0.2em]">
                     Palavra dos Jogadores:
                   </p>
                   <p className="text-[#00FFFF] font-black text-4xl uppercase tracking-tight drop-shadow-sm">
@@ -809,7 +807,7 @@ const App: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-3 w-full max-w-[280px] mt-2 shrink-0">
+              <div className="flex flex-col gap-3 w-full max-w-[280px] mt-4 shrink-0">
                 <button 
                   onClick={playAgain}
                   className="w-full bg-[#FF1493] text-white py-4 rounded-[1.5rem] font-black text-lg shadow-[0_8px_24px_rgba(255,20,147,0.4)] active:scale-95 transition-all flex items-center justify-center gap-3 group"
