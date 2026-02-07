@@ -13,8 +13,6 @@ import {
   Trophy,
   X,
   Edit2,
-  Ghost,
-  Search,
   ChevronLeft,
   Clock,
   Skull,
@@ -117,52 +115,6 @@ const FrameIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
   </svg>
 );
 
-const FloatingEmojis = ({ mysteryOnly = false }: { mysteryOnly?: boolean }) => {
-  const emojis = mysteryOnly ? ['?', '🔍', '🤔', '🤫', '🕯️', '👀'] : ['🕵️', '👻', '🤫', '🔎', '💀', '🤡', '👽', '👺'];
-  const [particles, setParticles] = useState<any[]>([]);
-
-  useEffect(() => {
-    const initialParticles = Array.from({ length: 15 }).map(() => ({
-      id: Math.random(),
-      emoji: emojis[Math.floor(Math.random() * emojis.length)],
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 20 + 20,
-      duration: Math.random() * 5 + 3,
-      delay: Math.random() * 2,
-    }));
-    setParticles(initialParticles);
-  }, []);
-
-  return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-20">
-      {particles.map((p) => (
-        <div
-          key={p.id}
-          className="absolute animate-float"
-          style={{
-            left: `${p.x}%`,
-            top: `${p.y}%`,
-            fontSize: `${p.size}px`,
-            animation: `float ${p.duration}s infinite ease-in-out`,
-            animationDelay: `${p.delay}s`,
-          }}
-        >
-          {p.emoji}
-        </div>
-      ))}
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translate(0, 0) rotate(0deg); }
-          25% { transform: translate(10px, -15px) rotate(10deg); }
-          50% { transform: translate(-5px, -30px) rotate(-10deg); }
-          75% { transform: translate(-15px, -15px) rotate(5deg); }
-        }
-      `}</style>
-    </div>
-  );
-};
-
 const App: React.FC = () => {
   const [phase, setPhase] = useState<GamePhase>(GamePhase.LOBBY);
   const [players, setPlayers] = useState<Player[]>([]);
@@ -176,7 +128,7 @@ const App: React.FC = () => {
   });
   const [distributionIndex, setDistributionIndex] = useState(0);
   const [votingIndex, setVotingIndex] = useState(0);
-  const [selectedSuspectId, setSelectedSuspectId] = useState<string | null>(null);
+  const [selectedSuspectIds, setSelectedSuspectIds] = useState<string[]>([]);
   const [voteCountMap, setVoteCountMap] = useState<Record<string, number>>({});
   
   const [isWordVisible, setIsWordVisible] = useState(false);
@@ -303,21 +255,35 @@ const App: React.FC = () => {
   const startAppVoting = () => {
     setVotingIndex(0);
     setVoteCountMap({});
-    setSelectedSuspectId(null);
+    setSelectedSuspectIds([]);
     setPhase(GamePhase.VOTING_SEQUENCE);
   };
 
+  const toggleSuspectSelection = (id: string) => {
+    setSelectedSuspectIds(prev => {
+      if (prev.includes(id)) {
+        return prev.filter(pId => pId !== id);
+      }
+      if (prev.length < settings.impostorCount) {
+        return [...prev, id];
+      }
+      return prev;
+    });
+  };
+
   const recordVoteAndNext = () => {
-    if (!selectedSuspectId) return;
+    if (selectedSuspectIds.length < settings.impostorCount) return;
 
     const newMap = { ...voteCountMap };
-    newMap[selectedSuspectId] = (newMap[selectedSuspectId] || 0) + 1;
+    selectedSuspectIds.forEach(id => {
+      newMap[id] = (newMap[id] || 0) + 1;
+    });
     setVoteCountMap(newMap);
 
     const activePlayers = players.filter(p => !p.isEliminated);
     if (votingIndex < activePlayers.length - 1) {
       setVotingIndex(votingIndex + 1);
-      setSelectedSuspectId(null);
+      setSelectedSuspectIds([]);
     } else {
       processVotingResults(newMap);
     }
@@ -389,7 +355,7 @@ const App: React.FC = () => {
 
   const updateImpostorCount = (val: number) => {
     const maxImpostors = Math.max(1, Math.floor(players.length / 2));
-    const newCount = Math.min(maxImpostors, Math.max(0, settings.impostorCount + val));
+    const newCount = Math.min(maxImpostors, Math.max(1, settings.impostorCount + val));
     setSettings({ ...settings, impostorCount: newCount });
   };
 
@@ -432,16 +398,18 @@ const App: React.FC = () => {
     return <div className="text-3xl">{icon}</div>;
   };
 
-  const HeaderGhost = ({ className = "w-7 h-7" }: { className?: string }) => (
-    <Ghost className={`${className} text-[#00FFFF] drop-shadow-[0_0_8px_rgba(0,255,255,0.5)]`} strokeWidth={3} />
-  );
-
   const activePlayers = players.filter(p => !p.isEliminated);
   const currentVoter = activePlayers[votingIndex];
   
   const impostors = players.filter(p => p.role === PlayerRole.IMPOSTOR || p.role === PlayerRole.UNDERCOVER);
   const citizenWord = players.find(p => p.role === PlayerRole.CITIZEN)?.word || '';
   const undercoverWord = impostors[0]?.word || '';
+
+  // Dynamic colors based on mode
+  const isImpostorMode = settings.mode === GameMode.IMPOSTOR;
+  const primaryColor = isImpostorMode ? '#FF1493' : '#00FFFF';
+  const primaryTextColor = isImpostorMode ? '#FFFFFF' : '#4B0082';
+  const primaryShadow = isImpostorMode ? 'rgba(255, 20, 147, 0.4)' : 'rgba(0, 255, 255, 0.4)';
 
   return (
     <div className="h-screen h-[100dvh] max-h-screen max-w-md mx-auto flex flex-col overflow-hidden relative">
@@ -452,11 +420,9 @@ const App: React.FC = () => {
           </button>
         )}
         <div className="flex items-center gap-3">
-          <HeaderGhost />
           <h1 className="text-2xl font-arcadia text-white drop-shadow-lg">
             {phase === GamePhase.LOBBY ? 'IMPOSTOR' : (settings.mode === GameMode.SPY ? 'ESPIÃO' : 'IMPOSTOR')}
           </h1>
-          <HeaderGhost />
         </div>
       </header>
 
@@ -469,13 +435,13 @@ const App: React.FC = () => {
                   onClick={() => setGameMode(GameMode.IMPOSTOR)}
                   className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-[1.2rem] font-arcadia text-xs transition-all ${settings.mode === GameMode.IMPOSTOR ? 'bg-[#FF1493] text-white shadow-[0_0_10px_rgba(255,20,147,0.4)]' : 'text-white hover:bg-white/5'}`}
                 >
-                  <Ghost size={14} /> IMPOSTOR
+                  IMPOSTOR
                 </button>
                 <button 
                   onClick={() => setGameMode(GameMode.SPY)}
                   className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-[1.2rem] font-arcadia text-xs transition-all ${settings.mode === GameMode.SPY ? 'bg-[#00FFFF] text-[#4B0082] shadow-[0_0_10px_rgba(0,255,255,0.4)]' : 'text-white hover:bg-white/5'}`}
                 >
-                  <Search size={14} /> ESPIÃO
+                  ESPIÃO
                 </button>
               </div>
 
@@ -487,11 +453,14 @@ const App: React.FC = () => {
                   <button 
                     onClick={() => updateImpostorCount(-1)} 
                     className="w-8 h-8 flex items-center justify-center bg-white/10 text-white rounded-full active:scale-90 disabled:opacity-20 transition-all" 
-                    disabled={settings.impostorCount <= 0}
+                    disabled={settings.impostorCount <= 1}
                   >
                     <Minus size={16} strokeWidth={4} />
                   </button>
-                  <div className="bg-[#FF1493] font-arcadia text-white w-8 h-8 flex items-center justify-center rounded-lg text-sm shadow-md">
+                  <div 
+                    className="font-arcadia w-8 h-8 flex items-center justify-center rounded-lg text-sm shadow-md"
+                    style={{ backgroundColor: primaryColor, color: primaryTextColor }}
+                  >
                     {settings.impostorCount}
                   </div>
                   <button 
@@ -506,8 +475,8 @@ const App: React.FC = () => {
             </div>
 
             <div className="bg-[#4B0082]/30 backdrop-blur-lg rounded-[2rem] p-4 border border-white/10 shadow-xl flex flex-col flex-grow min-h-0 overflow-hidden">
-              <h2 className="text-sm font-bold mb-2 flex items-center gap-2 text-[#00FFFF]">
-                <Users className="text-[#00FFFF]" size={16} /> Amiguinhos ({players.length}/10)
+              <h2 className="text-sm font-bold mb-2 flex items-center gap-2" style={{ color: primaryColor }}>
+                <Users size={16} /> Amiguinhos ({players.length}/10)
               </h2>
               
               <div className="space-y-1 overflow-y-auto no-scrollbar pr-1 flex-grow min-h-0">
@@ -525,7 +494,8 @@ const App: React.FC = () => {
                       {editingId === player.id ? (
                         <input
                           autoFocus
-                          className="bg-transparent border-b border-[#00FFFF] text-white font-bold text-sm w-full outline-none"
+                          className="bg-transparent border-b text-white font-bold text-sm w-full outline-none"
+                          style={{ borderColor: primaryColor }}
                           value={player.name}
                           onChange={(e) => updatePlayerName(player.id, e.target.value)}
                           onBlur={() => setEditingId(null)}
@@ -537,7 +507,7 @@ const App: React.FC = () => {
                         </div>
                       )}
                     </div>
-                    <button onClick={() => removePlayer(player.id)} className="text-white/20 hover:text-[#FF1493] p-1.5 shrink-0 transition-colors">
+                    <button onClick={() => removePlayer(player.id)} className="text-white/20 hover:text-red-500 p-1.5 shrink-0 transition-colors">
                       <Trash2 size={14} />
                     </button>
                   </div>
@@ -550,16 +520,26 @@ const App: React.FC = () => {
                     onChange={(e) => setNewPlayerName(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addPlayer()}
                     placeholder="Novo amigo..."
-                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 focus:outline-none focus:border-[#00FFFF] text-white placeholder:text-white/20 font-bold text-sm"
+                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 focus:outline-none text-white placeholder:text-white/20 font-bold text-sm"
+                    style={{ borderColor: editingId ? 'transparent' : 'rgba(255,255,255,0.1)' }}
                   />
-                  <button onClick={addPlayer} className="bg-[#FF1493] text-white w-10 h-10 rounded-xl shadow-lg flex items-center justify-center shrink-0 active:scale-95 transition-transform">
+                  <button 
+                    onClick={addPlayer} 
+                    className="w-10 h-10 rounded-xl shadow-lg flex items-center justify-center shrink-0 active:scale-95 transition-transform"
+                    style={{ backgroundColor: primaryColor, color: primaryTextColor }}
+                  >
                     <Plus size={20} strokeWidth={4} />
                   </button>
                 </div>
               </div>
             </div>
 
-            <button onClick={startGame} disabled={players.length < 3} className="w-full bg-[#FF1493] py-4 rounded-[1.5rem] font-black text-xl text-white flex items-center justify-center gap-3 active:translate-y-1 transition-all disabled:opacity-40 shrink-0">
+            <button 
+              onClick={startGame} 
+              disabled={players.length < 3} 
+              className="w-full py-4 rounded-[1.5rem] font-black text-xl flex items-center justify-center gap-3 active:translate-y-1 transition-all disabled:opacity-40 shrink-0"
+              style={{ backgroundColor: primaryColor, color: primaryTextColor, boxShadow: `0 8px 24px ${primaryShadow}` }}
+            >
               <Play fill="currentColor" size={24} /> VAMOS JOGAR!
             </button>
           </div>
@@ -573,7 +553,8 @@ const App: React.FC = () => {
                 <button 
                   key={cat.id} 
                   onClick={() => handleCategoryClick(cat)} 
-                  className="bg-[#90e0ef] backdrop-blur-md p-3 rounded-[1.2rem] border-2 border-white/5 text-center transition-all hover:bg-[#90e0ef]/80 hover:border-[#00FFFF]/30 active:scale-95 flex flex-col items-center justify-center min-h-[90px]"
+                  className="bg-white/5 backdrop-blur-md p-3 rounded-[1.2rem] border-2 border-white/5 text-center transition-all hover:bg-white/10 active:scale-95 flex flex-col items-center justify-center min-h-[90px] opacity-90"
+                  style={{ borderColor: 'rgba(255,255,255,0.05)' }}
                 >
                   <div className="mb-1">
                     {renderCategoryIcon(cat.id, cat.icon)}
@@ -588,7 +569,7 @@ const App: React.FC = () => {
         {phase === GamePhase.WORD_DISTRIBUTION && (
           <div className="h-full flex flex-col py-2 w-full relative overflow-hidden">
             <div className="absolute top-2 right-2 bg-white/10 px-3 py-1 rounded-full border border-white/10 shadow-sm backdrop-blur-sm">
-                <span className="font-arcadia text-[10px] text-[#00FFFF] tracking-widest">
+                <span className="font-arcadia text-[10px] tracking-widest" style={{ color: primaryColor }}>
                   {distributionIndex + 1}/{players.length}
                 </span>
             </div>
@@ -605,16 +586,17 @@ const App: React.FC = () => {
               </div>
               <button 
                 onClick={() => setIsWordVisible(!isWordVisible)} 
-                className={`w-[92%] max-w-[360px] aspect-square rounded-[3.5rem] border-6 border-dashed flex flex-col items-center justify-center transition-all duration-500 overflow-hidden ${isWordVisible ? 'bg-white border-[#00FFFF] scale-100 shadow-[0_0_40px_rgba(0,255,255,0.4)]' : 'bg-[#2F4F4F]/40 border-white/10'}`}
+                className={`w-[92%] max-w-[360px] aspect-square rounded-[3.5rem] border-6 border-dashed flex flex-col items-center justify-center transition-all duration-500 overflow-hidden ${isWordVisible ? 'bg-white scale-100 shadow-[0_0_40px_rgba(255,255,255,0.4)]' : 'bg-[#2F4F4F]/40 border-white/10'}`}
+                style={{ borderColor: isWordVisible ? primaryColor : 'rgba(255,255,255,0.1)' }}
               >
                 {isWordVisible ? (
                   <div className="text-center p-6 w-full flex flex-col items-center justify-center h-full relative">
                     {settings.mode !== GameMode.SPY && (
                       <p 
                         className="text-xl xs:text-2xl font-arcadia mb-6 uppercase tracking-widest shrink-0 font-bold"
-                        style={{ color: players[distributionIndex].role === PlayerRole.CITIZEN ? '#90e0ef' : (settings.mode === GameMode.SPY ? '#00FFFF' : '#FF1493') }}
+                        style={{ color: players[distributionIndex].role === PlayerRole.CITIZEN ? '#48cae4' : primaryColor }}
                       >
-                        {players[distributionIndex].role === PlayerRole.CITIZEN ? 'CIDADÃO' : (settings.mode === GameMode.SPY ? 'ESPIÃO' : 'IMPOSTOR')}
+                        {players[distributionIndex].role === PlayerRole.CITIZEN ? 'CIDADÃO' : 'IMPOSTOR'}
                       </p>
                     )}
                     <div className="w-full flex-1 flex items-center justify-center overflow-hidden">
@@ -638,7 +620,8 @@ const App: React.FC = () => {
             <button 
               onClick={nextDistribution} 
               disabled={!isWordVisible} 
-              className={`w-full py-4 rounded-[1.5rem] font-black text-xl active:translate-y-1 transition-all flex items-center justify-center shrink-0 ${isWordVisible ? 'bg-[#00FFFF] text-[#4B0082]' : 'bg-white/5 text-white/10 opacity-30 cursor-not-allowed'}`}
+              className={`w-full py-4 rounded-[1.5rem] font-black text-xl active:translate-y-1 transition-all flex items-center justify-center shrink-0 ${isWordVisible ? '' : 'bg-white/5 text-white/10 opacity-30 cursor-not-allowed'}`}
+              style={isWordVisible ? { backgroundColor: primaryColor, color: primaryTextColor } : {}}
             >
               {distributionIndex === players.length - 1 ? 'PRONTO' : 'PRÓXIMO'}
             </button>
@@ -647,15 +630,13 @@ const App: React.FC = () => {
 
         {phase === GamePhase.TIMER && (
           <div className="h-full flex flex-col py-4 w-full relative animate-in zoom-in duration-500 overflow-hidden">
-            <FloatingEmojis />
-            
             <div className="flex-1 flex flex-col items-center justify-start pt-8 z-10">
               <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-[3rem] shadow-2xl flex flex-col items-center gap-4 mb-12">
-                <Clock size={40} className="text-[#00FFFF] animate-pulse" />
-                <span className="text-6xl font-arcadia font-black text-white tabular-nums drop-shadow-[0_0_15px_rgba(0,255,255,0.5)]">
+                <Clock size={40} style={{ color: primaryColor }} className="animate-pulse" />
+                <span className="text-6xl font-arcadia font-black text-white tabular-nums" style={{ textShadow: `0 0 15px ${primaryShadow}` }}>
                   {formatTime(timerSeconds)}
                 </span>
-                <p className="text-[#00FFFF] font-bold text-xs uppercase tracking-widest text-center max-w-[150px]">
+                <p className="font-bold text-xs uppercase tracking-widest text-center max-w-[150px]" style={{ color: primaryColor }}>
                   Fale sobre sua palavra sem revelar!
                 </p>
               </div>
@@ -665,7 +646,8 @@ const App: React.FC = () => {
 
             <button 
               onClick={() => setPhase(GamePhase.DECISION)} 
-              className="w-full bg-[#FF1493] py-4 rounded-[1.5rem] font-black text-2xl text-white flex items-center justify-center gap-3 active:translate-y-1 transition-all z-10"
+              className="w-full py-4 rounded-[1.5rem] font-black text-2xl flex items-center justify-center gap-3 active:translate-y-1 transition-all z-10"
+              style={{ backgroundColor: primaryColor, color: primaryTextColor, boxShadow: `0 8px 24px ${primaryShadow}` }}
             >
               ADIVINHAR
             </button>
@@ -677,13 +659,15 @@ const App: React.FC = () => {
             <div className="flex flex-col items-center justify-center gap-16 w-full max-w-sm">
                <button 
                   onClick={() => setPhase(GamePhase.GUESS_FRIENDS)} 
-                  className="w-full bg-[#FF1493] py-8 rounded-[2rem] font-black text-2xl text-white flex items-center justify-center shadow-[0_15px_35px_rgba(255,20,147,0.4)] active:scale-95 transition-all uppercase tracking-widest"
+                  className="w-full py-8 rounded-[2rem] font-black text-2xl flex items-center justify-center active:scale-95 transition-all uppercase tracking-widest"
+                  style={{ backgroundColor: primaryColor, color: primaryTextColor, boxShadow: `0 15px 35px ${primaryShadow}` }}
                 >
                   Adivinhar entre Amigos
                 </button>
                 <button 
                   onClick={startAppVoting} 
-                  className="w-full bg-[#FF1493] py-8 rounded-[2rem] font-black text-2xl text-white flex items-center justify-center shadow-[0_15px_35px_rgba(255,20,147,0.4)] active:scale-95 transition-all uppercase tracking-widest"
+                  className="w-full py-8 rounded-[2rem] font-black text-2xl flex items-center justify-center active:scale-95 transition-all uppercase tracking-widest"
+                  style={{ backgroundColor: primaryColor, color: primaryTextColor, boxShadow: `0 15px 35px ${primaryShadow}` }}
                 >
                   Adivinhar na App
                 </button>
@@ -693,14 +677,14 @@ const App: React.FC = () => {
 
         {phase === GamePhase.GUESS_FRIENDS && (
           <div className="h-full flex flex-col items-center justify-center w-full relative animate-in fade-in duration-500 overflow-hidden px-4">
-            <FloatingEmojis mysteryOnly={true} />
             <div className="flex-1 flex flex-col items-center justify-center w-full z-10 gap-8">
               <p className="text-white/40 font-arcadia text-xs uppercase tracking-[0.3em] text-center max-w-[200px] leading-relaxed">
                 Cliquem quando estiverem prontos!
               </p>
               <button 
                 onClick={finishGameFriends}
-                className="w-full bg-[#00FFFF] text-[#4B0082] py-6 rounded-[1.8rem] font-black text-3xl shadow-[0_15px_40px_rgba(0,255,255,0.4)] active:scale-95 transition-all uppercase tracking-widest flex items-center justify-center gap-4 group"
+                className="w-full py-6 rounded-[1.8rem] font-black text-3xl active:scale-95 transition-all uppercase tracking-widest flex items-center justify-center gap-4 group"
+                style={{ backgroundColor: primaryColor, color: primaryTextColor, boxShadow: `0 15px 40px ${primaryShadow}` }}
               >
                 REVELAR
               </button>
@@ -711,13 +695,13 @@ const App: React.FC = () => {
         {phase === GamePhase.VOTING_SEQUENCE && currentVoter && (
           <div className="h-full flex flex-col py-2 w-full relative overflow-hidden animate-in slide-in-from-right duration-300">
             <div className="absolute top-2 right-2 bg-white/10 px-3 py-1 rounded-full border border-white/10 shadow-sm backdrop-blur-sm">
-                <span className="font-arcadia text-[10px] text-[#FF1493] tracking-widest">
+                <span className="font-arcadia text-[10px] tracking-widest" style={{ color: primaryColor }}>
                   {votingIndex + 1}/{activePlayers.length}
                 </span>
             </div>
 
             <div className="flex-1 flex flex-col items-center pt-10">
-              <p className="text-[#FF1493] font-arcadia text-2xl uppercase tracking-tighter italic mb-4">
+              <p className="font-arcadia text-2xl uppercase tracking-tighter italic mb-4" style={{ color: primaryColor }}>
                 Quem é o {settings.mode === GameMode.SPY ? 'Espião' : 'Impostor'}?
               </p>
               
@@ -729,18 +713,26 @@ const App: React.FC = () => {
                   {currentVoter.avatar}
                 </div>
                 <h2 className="text-xl font-black text-white italic uppercase tracking-widest">{currentVoter.name}</h2>
-                <p className="text-white/40 text-[10px] uppercase font-bold">É a sua vez de votar!</p>
+                <p className="text-white/40 text-[10px] uppercase font-bold">
+                  Sua vez! Selecione {settings.impostorCount} {settings.impostorCount === 1 ? 'suspeito' : 'suspeitos'}
+                </p>
               </div>
 
               <div className="w-full flex-1 overflow-y-auto no-scrollbar px-2">
-                <p className="text-white/60 text-[11px] font-bold uppercase tracking-[0.2em] mb-3 ml-2">Suspeitos:</p>
+                <div className="flex justify-between items-center mb-3 ml-2 pr-2">
+                   <p className="text-white/60 text-[11px] font-bold uppercase tracking-[0.2em]">Suspeitos:</p>
+                   <p className="text-[10px] font-bold" style={{ color: primaryColor }}>
+                      {selectedSuspectIds.length}/{settings.impostorCount}
+                   </p>
+                </div>
                 <div className="grid grid-cols-2 gap-2 pb-6">
                   {activePlayers.map(suspect => (
                     <button 
                       key={suspect.id} 
                       disabled={suspect.id === currentVoter.id}
-                      onClick={() => setSelectedSuspectId(suspect.id)}
-                      className={`p-3 rounded-[1.5rem] border-2 flex flex-col items-center transition-all ${suspect.id === currentVoter.id ? 'opacity-20 grayscale pointer-events-none' : (selectedSuspectId === suspect.id ? 'bg-[#FF1493]/30 border-[#FF1493] scale-105 shadow-[0_0_20px_rgba(255,20,147,0.3)]' : 'bg-white/5 border-white/5 opacity-80')}`}
+                      onClick={() => toggleSuspectSelection(suspect.id)}
+                      className={`p-3 rounded-[1.5rem] border-2 flex flex-col items-center transition-all ${suspect.id === currentVoter.id ? 'opacity-20 grayscale pointer-events-none' : (selectedSuspectIds.includes(suspect.id) ? 'scale-105' : 'bg-white/5 border-white/5 opacity-80')}`}
+                      style={selectedSuspectIds.includes(suspect.id) ? { backgroundColor: `${primaryColor}4D`, borderColor: primaryColor, boxShadow: `0 0 20px ${primaryShadow}` } : {}}
                     >
                       <span 
                         className="text-3xl mb-1 w-12 h-12 flex items-center justify-center rounded-full shadow-md border border-white/10"
@@ -757,8 +749,9 @@ const App: React.FC = () => {
             
             <button 
               onClick={recordVoteAndNext} 
-              disabled={!selectedSuspectId} 
-              className={`w-full py-4 rounded-[1.5rem] font-black text-xl active:translate-y-1 transition-all flex items-center justify-center shrink-0 ${selectedSuspectId ? 'bg-[#00FFFF] text-[#4B0082]' : 'bg-white/5 text-white/10 opacity-30 cursor-not-allowed'}`}
+              disabled={selectedSuspectIds.length < settings.impostorCount} 
+              className={`w-full py-4 rounded-[1.5rem] font-black text-xl active:translate-y-1 transition-all flex items-center justify-center shrink-0 ${selectedSuspectIds.length >= settings.impostorCount ? '' : 'bg-white/5 text-white/10 opacity-30 cursor-not-allowed'}`}
+              style={selectedSuspectIds.length >= settings.impostorCount ? { backgroundColor: primaryColor, color: primaryTextColor } : {}}
             >
               {votingIndex === activePlayers.length - 1 ? 'PRONTO' : 'PRÓXIMO'}
             </button>
@@ -767,7 +760,6 @@ const App: React.FC = () => {
 
         {phase === GamePhase.REVEAL && (
           <div className="h-full flex flex-col items-center justify-center w-full relative animate-in zoom-in duration-500 overflow-y-auto no-scrollbar px-4 py-6">
-            <FloatingEmojis />
             <div className="flex flex-col items-center justify-center gap-6 z-10 w-full min-h-full">
               <div className="w-full flex flex-col items-center gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 <div className="text-center flex flex-col items-center gap-3">
@@ -791,7 +783,7 @@ const App: React.FC = () => {
                     <p className="text-gray-400 font-bold text-lg uppercase tracking-[0.2em]">
                       Palavra do Espião:
                     </p>
-                    <p className="text-[#00FFFF] font-black text-4xl uppercase tracking-tight drop-shadow-sm">
+                    <p className="font-black text-4xl uppercase tracking-tight drop-shadow-sm" style={{ color: primaryColor }}>
                       {undercoverWord}
                     </p>
                   </div>
@@ -801,7 +793,7 @@ const App: React.FC = () => {
                   <p className="text-gray-400 font-bold text-lg uppercase tracking-[0.2em]">
                     Palavra dos Jogadores:
                   </p>
-                  <p className="text-[#00FFFF] font-black text-4xl uppercase tracking-tight drop-shadow-sm">
+                  <p className="font-black text-4xl uppercase tracking-tight drop-shadow-sm" style={{ color: primaryColor }}>
                     {citizenWord}
                   </p>
                 </div>
@@ -810,16 +802,15 @@ const App: React.FC = () => {
               <div className="flex flex-col gap-3 w-full max-w-[280px] mt-4 shrink-0">
                 <button 
                   onClick={playAgain}
-                  className="w-full bg-[#FF1493] text-white py-4 rounded-[1.5rem] font-black text-lg shadow-[0_8px_24px_rgba(255,20,147,0.4)] active:scale-95 transition-all flex items-center justify-center gap-3 group"
+                  className="w-full py-4 rounded-[1.5rem] font-black text-lg active:scale-95 transition-all flex items-center justify-center gap-3"
+                  style={{ backgroundColor: primaryColor, color: primaryTextColor, boxShadow: `0 8px 24px ${primaryShadow}` }}
                 >
-                  <RotateCcw size={18} className="group-hover:rotate-[-45deg] transition-transform" />
                   JOGAR NOVAMENTE
                 </button>
                 <button 
                   onClick={resetGame}
                   className="w-full bg-white/10 border border-white/20 text-white py-4 rounded-[1.5rem] font-black text-lg active:scale-95 transition-all flex items-center justify-center gap-3"
                 >
-                  <Home size={18} />
                   VOLTAR
                 </button>
               </div>
@@ -830,9 +821,6 @@ const App: React.FC = () => {
 
       {isLoading && (
         <div className="absolute inset-0 bg-[#4B0082]/95 backdrop-blur-xl z-50 flex flex-col items-center justify-center p-6 transition-all">
-          <div className="relative mb-4">
-              <HeaderGhost className="w-16 h-16 animate-spin relative" />
-          </div>
           <p className="font-arcadia text-xl text-white text-center animate-pulse">
             {settings.mode === GameMode.IMPOSTOR ? 'Criando Caos...' : 'Sincronizando...'}
           </p>
@@ -841,11 +829,12 @@ const App: React.FC = () => {
 
       {showAvatarPicker && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2F4F4F]/80 backdrop-blur-md">
-          <div className="bg-[#4B0082] rounded-[2.5rem] w-full max-w-[340px] border-3 border-[#00FFFF] shadow-[0_0_40px_rgba(0,255,255,0.3)] overflow-hidden flex flex-col">
+          <div className="bg-[#4B0082] rounded-[2.5rem] w-full max-w-[340px] border-3 shadow-2xl overflow-hidden flex flex-col" style={{ borderColor: primaryColor, boxShadow: `0 0 40px ${primaryShadow}` }}>
             <div className="flex bg-[#8A2BE2]/40 relative items-stretch border-b border-white/10">
               <button 
                 onClick={() => setPickerTab('avatar')}
-                className={`flex-1 pt-7 pb-5 px-4 flex items-center justify-center gap-2 transition-all ${pickerTab === 'avatar' ? 'bg-white/10 border-b-2 border-[#00FFFF]' : 'opacity-40 hover:opacity-100'}`}
+                className={`flex-1 pt-7 pb-5 px-4 flex items-center justify-center gap-2 transition-all ${pickerTab === 'avatar' ? 'bg-white/10 border-b-2' : 'opacity-40 hover:opacity-100'}`}
+                style={pickerTab === 'avatar' ? { borderColor: primaryColor } : {}}
               >
                 <MiniPersonIcon className="w-5 h-5 text-white" />
                 <h3 className="text-white font-black text-sm uppercase tracking-wider">Avatar</h3>
@@ -853,7 +842,8 @@ const App: React.FC = () => {
               
               <button 
                 onClick={() => setPickerTab('bg')}
-                className={`flex-1 pt-7 pb-5 px-4 flex items-center justify-center gap-2 transition-all ${pickerTab === 'bg' ? 'bg-white/10 border-b-2 border-[#00FFFF]' : 'opacity-40 hover:opacity-100'}`}
+                className={`flex-1 pt-7 pb-5 px-4 flex items-center justify-center gap-2 transition-all ${pickerTab === 'bg' ? 'bg-white/10 border-b-2' : 'opacity-40 hover:opacity-100'}`}
+                style={pickerTab === 'bg' ? { borderColor: primaryColor } : {}}
               >
                 <FrameIcon className="w-5 h-5 text-white" />
                 <h3 className="text-white font-black text-sm uppercase tracking-wider">Fundo</h3>
@@ -861,7 +851,8 @@ const App: React.FC = () => {
 
               <button 
                 onClick={() => setShowAvatarPicker(false)} 
-                className="absolute top-2 right-2 bg-[#FF1493] text-white w-9 h-9 rounded-full active:scale-90 shadow-lg border-2 border-white/30 z-20 flex items-center justify-center transition-transform hover:rotate-90"
+                className="absolute top-2 right-2 text-white w-9 h-9 rounded-full active:scale-90 shadow-lg border-2 border-white/30 z-20 flex items-center justify-center transition-transform hover:rotate-90"
+                style={{ backgroundColor: primaryColor }}
               >
                 <X size={20} strokeWidth={4} />
               </button>
@@ -883,7 +874,8 @@ const App: React.FC = () => {
                     <button 
                       key={index} 
                       onClick={() => selectAvatar(avatar)} 
-                      className={`aspect-square bg-white/5 rounded-2xl flex items-center justify-center text-3xl hover:bg-[#00FFFF]/20 hover:scale-105 transition-all ${players.find(p => p.id === activePlayerId)?.avatar === avatar ? 'ring-3 ring-[#00FFFF] bg-white/20 shadow-lg scale-105' : 'border border-white/5'}`}
+                      className={`aspect-square bg-white/5 rounded-2xl flex items-center justify-center text-3xl hover:bg-white/10 hover:scale-105 transition-all ${players.find(p => p.id === activePlayerId)?.avatar === avatar ? 'ring-3 bg-white/20 shadow-lg scale-105' : 'border border-white/5'}`}
+                      style={players.find(p => p.id === activePlayerId)?.avatar === avatar ? { ringColor: primaryColor } : {}}
                     >
                       {avatar}
                     </button>
@@ -893,8 +885,8 @@ const App: React.FC = () => {
                     <button 
                       key={index} 
                       onClick={() => selectColor(color)} 
-                      className={`aspect-square rounded-full border-3 transition-all hover:scale-110 shadow-md ${players.find(p => p.id === activePlayerId)?.avatarColor === color ? 'border-white ring-4 ring-[#00FFFF]/50 shadow-xl scale-110' : 'border-white/10'}`}
-                      style={{ backgroundColor: color }}
+                      className={`aspect-square rounded-full border-3 transition-all hover:scale-110 shadow-md ${players.find(p => p.id === activePlayerId)?.avatarColor === color ? 'border-white ring-4 shadow-xl scale-110' : 'border-white/10'}`}
+                      style={Object.assign({ backgroundColor: color }, players.find(p => p.id === activePlayerId)?.avatarColor === color ? { ringColor: `${primaryColor}80` } : {})}
                     />
                   ))
                 )}
@@ -904,7 +896,8 @@ const App: React.FC = () => {
             <div className="p-5 pt-0 pb-7 bg-[#2F4F4F]/40">
               <button 
                 onClick={() => setShowAvatarPicker(false)}
-                className="w-full bg-[#00FFFF] text-[#4B0082] py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-lg shadow-[0_10px_20px_rgba(0,255,255,0.3)] active:scale-95 active:translate-y-1 transition-all"
+                className="w-full py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-lg active:scale-95 active:translate-y-1 transition-all"
+                style={{ backgroundColor: primaryColor, color: primaryTextColor, boxShadow: `0 10px 20px ${primaryShadow}` }}
               >
                 PRONTO
               </button>
