@@ -762,25 +762,25 @@ const App: React.FC = () => {
         )}
 
         {phase === GamePhase.REVEAL && (
-          <div className="h-full flex flex-col items-center justify-center w-full relative animate-in zoom-in duration-500 overflow-hidden px-4">
+          <div className="h-full flex flex-col items-center justify-center w-full relative animate-in zoom-in duration-500 overflow-y-auto no-scrollbar px-4 py-6">
             <FloatingEmojis />
-            <div className="flex-1 flex flex-col items-center justify-center gap-10 z-10 w-full">
-              <div className="text-center space-y-1">
-                <h2 className="font-arcadia text-[#00FFFF] text-5xl tracking-widest drop-shadow-[0_0_15px_rgba(0,255,255,0.4)]">
+            <div className="flex flex-col items-center justify-center gap-6 z-10 w-full min-h-full">
+              <div className="text-center space-y-1 shrink-0">
+                <h2 className="font-arcadia text-[#00FFFF] text-4xl tracking-widest drop-shadow-[0_0_10px_rgba(0,255,255,0.4)]">
                   {settings.mode === GameMode.SPY ? 'ESPIÃO' : 'IMPOSTOR'}
                 </h2>
               </div>
 
-              <div className="w-full flex flex-col items-center gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <div className="text-center flex flex-col items-center gap-4">
-                  <p className="text-white/50 font-bold text-xs uppercase tracking-[0.2em]">
+              <div className="w-full flex flex-col items-center gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="text-center flex flex-col items-center gap-3">
+                  <p className="text-white/50 font-bold text-[10px] uppercase tracking-[0.2em]">
                     {settings.mode === GameMode.IMPOSTOR ? 'Impostor:' : 'Espião:'}
                   </p>
                   <div className="flex flex-col items-center gap-2">
                     {impostors.map(imp => (
                       <div key={imp.id} className="flex flex-col items-center gap-1">
-                        <span className="text-7xl mb-2 drop-shadow-lg">{imp.avatar}</span>
-                        <h3 className="text-white font-black text-4xl uppercase italic tracking-tighter">
+                        <span className="text-5xl mb-1 drop-shadow-lg">{imp.avatar}</span>
+                        <h3 className="text-white font-black text-3xl uppercase italic tracking-tighter">
                           {imp.name}
                         </h3>
                       </div>
@@ -789,39 +789,39 @@ const App: React.FC = () => {
                 </div>
 
                 {settings.mode === GameMode.SPY && (
-                  <div className="text-center flex flex-col items-center gap-3">
-                    <p className="text-white/50 font-bold text-xs uppercase tracking-[0.2em]">
+                  <div className="text-center flex flex-col items-center gap-2">
+                    <p className="text-white/50 font-bold text-[10px] uppercase tracking-[0.2em]">
                       Palavra do Espião:
                     </p>
-                    <p className="text-[#00FFFF] font-black text-5xl uppercase tracking-tight drop-shadow-sm">
+                    <p className="text-[#00FFFF] font-black text-4xl uppercase tracking-tight drop-shadow-sm">
                       {undercoverWord}
                     </p>
                   </div>
                 )}
 
-                <div className="text-center flex flex-col items-center gap-3">
-                  <p className="text-white/50 font-bold text-xs uppercase tracking-[0.2em]">
+                <div className="text-center flex flex-col items-center gap-2">
+                  <p className="text-white/50 font-bold text-[10px] uppercase tracking-[0.2em]">
                     Palavra dos Jogadores:
                   </p>
-                  <p className="text-[#00FFFF] font-black text-5xl uppercase tracking-tight drop-shadow-sm">
+                  <p className="text-[#00FFFF] font-black text-4xl uppercase tracking-tight drop-shadow-sm">
                     {citizenWord}
                   </p>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-4 w-full max-w-[300px] mt-4">
+              <div className="flex flex-col gap-3 w-full max-w-[280px] mt-2 shrink-0">
                 <button 
                   onClick={playAgain}
-                  className="w-full bg-[#FF1493] text-white py-5 rounded-[1.8rem] font-black text-xl shadow-[0_10px_30px_rgba(255,20,147,0.4)] active:scale-95 transition-all flex items-center justify-center gap-3 group"
+                  className="w-full bg-[#FF1493] text-white py-4 rounded-[1.5rem] font-black text-lg shadow-[0_8px_24px_rgba(255,20,147,0.4)] active:scale-95 transition-all flex items-center justify-center gap-3 group"
                 >
-                  <RotateCcw size={20} className="group-hover:rotate-[-45deg] transition-transform" />
+                  <RotateCcw size={18} className="group-hover:rotate-[-45deg] transition-transform" />
                   JOGAR NOVAMENTE
                 </button>
                 <button 
                   onClick={resetGame}
-                  className="w-full bg-white/10 border border-white/20 text-white py-5 rounded-[1.8rem] font-black text-xl active:scale-95 transition-all flex items-center justify-center gap-3"
+                  className="w-full bg-white/10 border border-white/20 text-white py-4 rounded-[1.5rem] font-black text-lg active:scale-95 transition-all flex items-center justify-center gap-3"
                 >
-                  <Home size={20} />
+                  <Home size={18} />
                   VOLTAR
                 </button>
               </div>
