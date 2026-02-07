@@ -19,7 +19,9 @@ import {
   Clock,
   Skull,
   Zap,
-  HelpCircle
+  HelpCircle,
+  RotateCcw,
+  Home
 } from 'lucide-react';
 
 const AVATAR_COLORS = [
@@ -333,35 +335,27 @@ const App: React.FC = () => {
     });
 
     if (mostVotedId) {
-      handleVote(mostVotedId);
+      const votedPlayer = players.find(p => p.id === mostVotedId);
+      if (votedPlayer) {
+        const newPlayers = players.map(p => p.id === mostVotedId ? { ...p, isEliminated: true } : p);
+        setPlayers(newPlayers);
+        
+        const badGuyCaught = (votedPlayer.role === PlayerRole.IMPOSTOR || votedPlayer.role === PlayerRole.UNDERCOVER);
+        
+        if (badGuyCaught) {
+          setWinner('CIDADÃOS');
+        } else {
+          setWinner(settings.mode === GameMode.IMPOSTOR ? 'IMPOSTOR' : 'ESPIÃO');
+        }
+        
+        setPhase(GamePhase.GUESS_FRIENDS);
+      }
     } else {
       resetGame();
     }
   };
 
-  const handleVote = (id: string) => {
-    const votedPlayer = players.find(p => p.id === id);
-    if (!votedPlayer) return;
-    
-    const newPlayers = players.map(p => p.id === id ? { ...p, isEliminated: true } : p);
-    setPlayers(newPlayers);
-
-    const activeBadGuys = newPlayers.filter(p => !p.isEliminated && (p.role === PlayerRole.IMPOSTOR || p.role === PlayerRole.UNDERCOVER)).length;
-    const activeCivilians = newPlayers.filter(p => !p.isEliminated && p.role === PlayerRole.CITIZEN).length;
-
-    if (activeBadGuys === 0) {
-      setWinner('CIDADÃOS');
-      setPhase(GamePhase.REVEAL);
-    } else if (activeBadGuys >= activeCivilians) {
-      setWinner(settings.mode === GameMode.IMPOSTOR ? 'IMPOSTOR' : 'ESPIÃO');
-      setPhase(GamePhase.REVEAL);
-    } else {
-      setPhase(GamePhase.VOTING);
-    }
-  };
-
   const finishGameFriends = () => {
-    setWinner('FIM DO JOGO');
     setPhase(GamePhase.REVEAL);
   };
 
@@ -369,6 +363,13 @@ const App: React.FC = () => {
     setPlayers(players.map(p => ({ ...p, isEliminated: false, word: '', role: PlayerRole.CITIZEN })));
     setPhase(GamePhase.LOBBY);
     setWinner(null);
+  };
+
+  const playAgain = () => {
+    // Mantém os jogadores mas reseta roles e palavras e vai para seleção de categoria
+    setPlayers(players.map(p => ({ ...p, isEliminated: false, word: '', role: PlayerRole.CITIZEN })));
+    setWinner(null);
+    setPhase(GamePhase.CATEGORY_SELECTION);
   };
 
   const handleBack = () => {
@@ -380,6 +381,8 @@ const App: React.FC = () => {
       setPhase(GamePhase.TIMER);
     } else if (phase === GamePhase.GUESS_FRIENDS || phase === GamePhase.VOTING_SEQUENCE) {
       setPhase(GamePhase.DECISION);
+    } else if (phase === GamePhase.REVEAL) {
+      resetGame();
     } else {
       resetGame();
     }
@@ -436,11 +439,15 @@ const App: React.FC = () => {
 
   const activePlayers = players.filter(p => !p.isEliminated);
   const currentVoter = activePlayers[votingIndex];
+  
+  // Lógica para encontrar o impostor para a tela final
+  const impostors = players.filter(p => p.role === PlayerRole.IMPOSTOR || p.role === PlayerRole.UNDERCOVER);
+  const citizenWord = players.find(p => p.role === PlayerRole.CITIZEN)?.word || '';
 
   return (
     <div className="h-screen h-[100dvh] max-h-screen max-w-md mx-auto flex flex-col overflow-hidden relative">
       <header className="p-2 pt-4 relative flex items-center justify-center z-10 shrink-0">
-        {phase !== GamePhase.LOBBY && (
+        {(phase !== GamePhase.LOBBY && phase !== GamePhase.REVEAL) && (
           <button onClick={handleBack} className="absolute left-4 bg-white/10 p-2 rounded-full hover:bg-white/30 transition-colors border border-white/10">
             <ChevronLeft size={20} className="text-white" strokeWidth={3} />
           </button>
@@ -598,13 +605,15 @@ const App: React.FC = () => {
                 className={`w-[92%] max-w-[360px] aspect-square rounded-[3.5rem] border-6 border-dashed flex flex-col items-center justify-center transition-all duration-500 overflow-hidden ${isWordVisible ? 'bg-white border-[#00FFFF] scale-100 shadow-[0_0_40px_rgba(0,255,255,0.4)]' : 'bg-[#2F4F4F]/40 border-white/10'}`}
               >
                 {isWordVisible ? (
-                  <div className="text-center p-6 w-full flex flex-col items-center justify-center h-full">
-                    <p 
-                      className="text-xl xs:text-2xl font-arcadia mb-6 uppercase tracking-widest shrink-0 font-bold"
-                      style={{ color: players[distributionIndex].role === PlayerRole.CITIZEN ? '#48cae4' : '#dd2d4a' }}
-                    >
-                      {players[distributionIndex].role === PlayerRole.CITIZEN ? 'CIDADÃO' : (settings.mode === GameMode.IMPOSTOR ? 'IMPOSTOR' : 'ESPIÃO')}
-                    </p>
+                  <div className="text-center p-6 w-full flex flex-col items-center justify-center h-full relative">
+                    {settings.mode !== GameMode.SPY && (
+                      <p 
+                        className="text-xl xs:text-2xl font-arcadia mb-6 uppercase tracking-widest shrink-0 font-bold"
+                        style={{ color: players[distributionIndex].role === PlayerRole.CITIZEN ? '#48cae4' : '#dd2d4a' }}
+                      >
+                        {players[distributionIndex].role === PlayerRole.CITIZEN ? 'CIDADÃO' : 'IMPOSTOR'}
+                      </p>
+                    )}
                     <div className="w-full flex-1 flex items-center justify-center overflow-hidden">
                       <p 
                         className="text-5xl xs:text-7xl font-black leading-[1.1] break-words px-2 text-center max-h-full overflow-hidden hyphens-auto drop-shadow-sm"
@@ -665,13 +674,13 @@ const App: React.FC = () => {
             <div className="flex flex-col items-center justify-center gap-16 w-full max-w-sm">
                <button 
                   onClick={() => setPhase(GamePhase.GUESS_FRIENDS)} 
-                  className="w-full bg-[#FF1493] py-6 rounded-[1.8rem] font-black text-2xl text-white flex items-center justify-center shadow-[0_10px_30px_rgba(255,20,147,0.3)] active:scale-95 transition-all uppercase tracking-tighter"
+                  className="w-full bg-[#FF1493] py-8 rounded-[2rem] font-black text-2xl text-white flex items-center justify-center shadow-[0_15px_35px_rgba(255,20,147,0.4)] active:scale-95 transition-all uppercase tracking-widest"
                 >
                   Adivinhar entre Amigos
                 </button>
                 <button 
                   onClick={startAppVoting} 
-                  className="w-full bg-[#FF1493] py-6 rounded-[1.8rem] font-black text-2xl text-white flex items-center justify-center shadow-[0_10px_30px_rgba(255,20,147,0.3)] active:scale-95 transition-all uppercase tracking-tighter"
+                  className="w-full bg-[#FF1493] py-8 rounded-[2rem] font-black text-2xl text-white flex items-center justify-center shadow-[0_15px_35px_rgba(255,20,147,0.4)] active:scale-95 transition-all uppercase tracking-widest"
                 >
                   Adivinhar na App
                 </button>
@@ -724,8 +733,9 @@ const App: React.FC = () => {
                   {activePlayers.map(suspect => (
                     <button 
                       key={suspect.id} 
+                      disabled={suspect.id === currentVoter.id}
                       onClick={() => setSelectedSuspectId(suspect.id)}
-                      className={`p-3 rounded-[1.5rem] border-2 flex flex-col items-center transition-all ${selectedSuspectId === suspect.id ? 'bg-[#FF1493]/30 border-[#FF1493] scale-105 shadow-[0_0_20px_rgba(255,20,147,0.3)]' : 'bg-white/5 border-white/5 opacity-80'}`}
+                      className={`p-3 rounded-[1.5rem] border-2 flex flex-col items-center transition-all ${suspect.id === currentVoter.id ? 'opacity-20 grayscale pointer-events-none' : (selectedSuspectId === suspect.id ? 'bg-[#FF1493]/30 border-[#FF1493] scale-105 shadow-[0_0_20px_rgba(255,20,147,0.3)]' : 'bg-white/5 border-white/5 opacity-80')}`}
                     >
                       <span 
                         className="text-3xl mb-1 w-12 h-12 flex items-center justify-center rounded-full shadow-md border border-white/10"
@@ -750,56 +760,62 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {phase === GamePhase.VOTING && (
-          <div className="space-y-3 w-full h-full flex flex-col overflow-hidden">
-            <h2 className="text-xl font-black text-center text-white italic">Quem é o {settings.mode === GameMode.IMPOSTOR ? 'Culpado' : 'Suspeito'}?</h2>
-            <div className="grid grid-cols-2 gap-2 pb-4 overflow-y-auto no-scrollbar flex-1">
-              {players.filter(p => !p.isEliminated).map(p => (
-                <button key={p.id} onClick={() => handleVote(p.id)} className="bg-white/5 p-3 rounded-[1.5rem] border-2 border-white/5 flex flex-col items-center hover:bg-[#FF1493]/20 hover:border-[#FF1493]/50 transition-all">
-                  <span 
-                    className="text-4xl mb-1 w-16 h-16 flex items-center justify-center rounded-full shadow-xl border-2 border-white/10"
-                    style={{ backgroundColor: p.avatarColor || '#333' }}
-                  >
-                    {p.avatar}
-                  </span>
-                  <span className="font-black text-white text-xs truncate w-full uppercase tracking-tighter">{p.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         {phase === GamePhase.REVEAL && (
-          <div className="flex flex-col items-center justify-center space-y-4 py-2 w-full text-center h-full">
-            <div className="relative">
-                <Trophy size={70} className="text-[#00FFFF] mx-auto mb-1 relative drop-shadow-[0_0_15px_rgba(0,255,255,0.4)]" />
-            </div>
-            <div>
-                <h2 className="text-[10px] uppercase text-[#00FFFF] font-black tracking-widest italic mb-0.5">Parabéns</h2>
-                <h3 className="text-3xl font-arcadia text-white drop-shadow-lg">{winner}</h3>
-            </div>
-            <div className="w-full space-y-1.5 max-h-[35vh] overflow-y-auto no-scrollbar">
-              {players.map(p => (
-                <div key={p.id} className={`flex items-center justify-between p-2 rounded-[1.2rem] border-2 transition-all ${p.role !== PlayerRole.CITIZEN ? 'bg-[#FF1493]/20 border-[#FF1493]' : 'bg-white/5 border-white/5 opacity-80'}`}>
-                  <div className="flex items-center gap-2">
-                    <span 
-                      className="text-xl w-8 h-8 flex items-center justify-center rounded-full shadow-sm border border-white/10"
-                      style={{ backgroundColor: p.avatarColor || '#333' }}
-                    >
-                      {p.avatar}
-                    </span>
-                    <span className="font-black text-white text-[10px] uppercase">{p.name}</span>
-                  </div>
-                  <div className="text-right">
-                    <span className={`text-[7px] uppercase font-arcadia px-1.5 py-0.5 rounded-full ${p.role !== PlayerRole.CITIZEN ? 'bg-[#FF1493] text-white' : 'bg-white/10 text-white/50'}`}>
-                      {p.role === PlayerRole.CITIZEN ? 'CIDADÃO' : settings.mode === GameMode.IMPOSTOR ? 'IMPOSTOR' : 'ESPIÃO'}
-                    </span>
-                    <p className="text-[10px] font-bold text-[#00FFFF] mt-0.5 italic uppercase">{p.word.includes('IMPOSTOR!') ? '?' : p.word}</p>
+          <div className="h-full flex flex-col items-center justify-center w-full relative animate-in zoom-in duration-500 overflow-hidden px-4">
+            <FloatingEmojis />
+            <div className="flex-1 flex flex-col items-center justify-center gap-6 z-10 w-full">
+              <div className="text-center space-y-1">
+                <h2 className="font-arcadia text-[#00FFFF] text-5xl tracking-widest drop-shadow-[0_0_15px_rgba(0,255,255,0.4)]">
+                  IMPOSTOR
+                </h2>
+              </div>
+
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[3rem] shadow-2xl w-full flex flex-col items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="text-center">
+                  <p className="text-white/50 font-bold text-xs uppercase tracking-[0.2em] mb-1">
+                    {settings.mode === GameMode.IMPOSTOR ? 'Impostor:' : 'Espião:'}
+                  </p>
+                  <div className="flex flex-col items-center gap-2">
+                    {impostors.map(imp => (
+                      <div key={imp.id} className="flex flex-col items-center gap-1">
+                        <span className="text-6xl mb-2">{imp.avatar}</span>
+                        <h3 className="text-white font-black text-3xl uppercase italic tracking-tighter">
+                          {imp.name}
+                        </h3>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
+
+                <div className="w-full h-px bg-white/10 my-2" />
+
+                <div className="text-center">
+                  <p className="text-white/50 font-bold text-xs uppercase tracking-[0.2em] mb-1">
+                    Palavra dos Jogadores:
+                  </p>
+                  <p className="text-[#00FFFF] font-black text-4xl uppercase tracking-tight drop-shadow-sm">
+                    {citizenWord}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-4 w-full max-w-[280px]">
+                <button 
+                  onClick={playAgain}
+                  className="w-full bg-[#FF1493] text-white py-5 rounded-[1.8rem] font-black text-xl shadow-[0_10px_30px_rgba(255,20,147,0.4)] active:scale-95 transition-all flex items-center justify-center gap-3 group"
+                >
+                  <RotateCcw size={20} className="group-hover:rotate-[-45deg] transition-transform" />
+                  JOGAR NOVAMENTE
+                </button>
+                <button 
+                  onClick={resetGame}
+                  className="w-full bg-white/10 border border-white/20 text-white py-5 rounded-[1.8rem] font-black text-xl active:scale-95 transition-all flex items-center justify-center gap-3"
+                >
+                  <Home size={20} />
+                  VOLTAR
+                </button>
+              </div>
             </div>
-            <button onClick={resetGame} className="w-full bg-gradient-to-r from-[#00FFFF] to-[#8A2BE2] text-[#4B0082] py-3.5 rounded-[1.5rem] font-black text-lg shadow-xl active:scale-95 transition-all">NOVO ROUND! 🎈</button>
           </div>
         )}
       </main>
