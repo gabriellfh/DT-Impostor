@@ -594,7 +594,7 @@ const App: React.FC = () => {
                     {settings.mode !== GameMode.SPY && (
                       <p 
                         className="text-xl xs:text-2xl font-arcadia mb-6 uppercase tracking-widest shrink-0 font-bold"
-                        style={{ color: players[distributionIndex].role === PlayerRole.CITIZEN ? '#48cae4' : primaryColor }}
+                        style={{ color: players[distributionIndex].role === PlayerRole.CITIZEN ? (isImpostorMode ? '#fb6f92' : '#48cae4') : primaryColor }}
                       >
                         {players[distributionIndex].role === PlayerRole.CITIZEN ? 'CIDADÃO' : 'IMPOSTOR'}
                       </p>
